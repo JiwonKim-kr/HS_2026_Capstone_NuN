@@ -27,7 +27,7 @@ export default function OnboardingPage() {
     } else {
       // Step 2 finish logic (API call, redirect)
       alert('온보딩 완료!');
-      router.push("/");
+      router.push("/dashboard");
     }
   };
 
