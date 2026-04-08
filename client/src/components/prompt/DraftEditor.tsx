@@ -1,8 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { SendHorizonal } from "lucide-react";
 
-export function DraftEditor() {
+interface DraftEditorProps {
+  onSubmit?: (text: string) => void;
+}
+
+export function DraftEditor({ onSubmit }: DraftEditorProps) {
+  const [text, setText] = useState("");
+
+  const handleSubmit = () => {
+    if (text.trim() && onSubmit) {
+      onSubmit(text.trim());
+    }
+  };
+
   return (
     <div className="w-full flex-shrink-0 flex flex-col items-center">
       <div className="w-full max-w-[830px] flex flex-col h-[385px] relative">
@@ -21,6 +34,8 @@ export function DraftEditor() {
           {/* Text Area */}
           <div className="flex-1 px-6 pb-6 pt-2">
             <textarea 
+              value={text}
+              onChange={(e) => setText(e.target.value)}
               className="w-full h-full resize-none bg-transparent text-[#191c1e] text-[20px] leading-[28px] placeholder:text-[#c5c5d4] outline-none"
               placeholder="여기에 거친 초안이나 아이디어를 입력하세요..."
             />
@@ -28,7 +43,11 @@ export function DraftEditor() {
 
           {/* Bottom Action Bar */}
           <div className="bg-[#f2f4f6]/50 h-[80px] w-full flex items-center justify-end px-6 mt-auto shrink-0 relative">
-            <button className="bg-[#003e93] hover:bg-[#002f6e] transition-colors rounded-[12px] flex items-center justify-center size-[48px] absolute -translate-y-1/2 top-1/2 right-[24px] shadow-md hover:shadow-lg group">
+            <button 
+              onClick={handleSubmit}
+              disabled={!text.trim()}
+              className="bg-[#003e93] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#002f6e] transition-colors rounded-[12px] flex items-center justify-center size-[48px] absolute -translate-y-1/2 top-1/2 right-[24px] shadow-md hover:shadow-lg group"
+            >
               <SendHorizonal className="w-5 h-5 text-white ml-0.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
