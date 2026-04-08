@@ -47,7 +47,7 @@ export default function Home() {
   };
 
   return (
-    <MainLayout>
+    <>
       {view === 'draft' ? (
         <div className="flex flex-col items-center w-full max-w-5xl mx-auto h-full pt-12 pb-16">
           {/* Header Text */}
@@ -82,6 +82,6 @@ export default function Home() {
           onRestart={handleRestart} 
         />
       )}
-    </MainLayout>
+    </>
   );
 }
