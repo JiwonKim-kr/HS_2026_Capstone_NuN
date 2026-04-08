@@ -30,10 +30,10 @@ export function AnalysisResult({ originalPrompt, onSelect }: AnalysisResultProps
   ];
 
   return (
-    <div className="flex flex-col items-start w-full max-w-6xl mx-auto h-full pt-12 pb-16 px-6">
+    <div className="flex flex-col items-start w-full max-w-6xl mx-auto h-full pt-12 pb-16 px-6 overflow-x-clip">
       
       {/* Analysis Header */}
-      <div className="w-full flex justify-between items-end mb-16">
+      <div className="w-full flex justify-between items-end mb-12">
         <div className="max-w-[650px]">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#d9e2ff] rounded-full mb-6 relative">
             <Sparkles className="w-[13px] h-[13px] text-[#001945]" />
@@ -64,90 +64,94 @@ export function AnalysisResult({ originalPrompt, onSelect }: AnalysisResultProps
       </div>
 
       {/* Prompt Candidates Header */}
-      <div className="w-full flex items-center mb-8">
+      <div className="w-full flex items-center mb-6">
         <h2 className="text-[24px] text-[#191c1e] mr-4 whitespace-nowrap">프롬프트 후보군</h2>
         <div className="flex-1 h-px bg-[#e0e3e5]" />
       </div>
 
-      {/* Candidate Card 3D Carousel */}
-      <div className="relative w-full max-w-[1000px] mx-auto h-[550px] flex items-center justify-center mt-6">
-        
-        {/* Left Arrow */}
-        <button 
-          onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : versions.length - 1)}
-          className="absolute left-[-20px] md:left-2 z-30 flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-100 text-[#454652] hover:text-[#003e93] hover:scale-105 transition-all"
-        >
-          <ChevronLeft className="w-7 h-7" />
-        </button>
+      {/* Candidate Card 3D Carousel Wrapper (Prevents Horizontal Scroll Jitter, allows Vertical) */}
+      <div className="w-full relative py-6">
+        <div className="relative w-full max-w-[1000px] mx-auto h-[540px] flex items-center justify-center">
+          
+          {/* Left Arrow */}
+          <button 
+            onClick={() => setCurrentIndex(prev => prev > 0 ? prev - 1 : versions.length - 1)}
+            className="absolute left-[10px] md:-left-4 z-30 flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-100 text-[#454652] hover:text-[#003e93] hover:scale-105 transition-all"
+          >
+            <ChevronLeft className="w-7 h-7" />
+          </button>
 
-        {versions.map((version, idx) => {
-          let offset = idx - currentIndex;
-          if (offset < -1) offset += versions.length;
-          if (offset > 1) offset -= versions.length;
+          {versions.map((version, idx) => {
+            let offset = idx - currentIndex;
+            if (offset < -1) offset += versions.length;
+            if (offset > 1) offset -= versions.length;
 
-          const isCenter = offset === 0;
-          let transformStr = "translateX(0) scale(1)";
-          if (offset === -1) transformStr = "translateX(-60%) scale(0.85)";
-          if (offset === 1) transformStr = "translateX(60%) scale(0.85)";
+            const isCenter = offset === 0;
+            let transformStr = "translateX(0) scale(1)";
+            if (offset === -1) transformStr = "translateX(-65%) scale(0.85)";
+            if (offset === 1) transformStr = "translateX(65%) scale(0.85)";
 
-          return (
-            <div 
-              key={version.id}
-              className={`absolute top-4 w-[600px] h-[480px] group flex flex-col justify-between bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
-                isCenter 
-                  ? "border-t-4 border-transparent shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:border-[#003e93] hover:ring-1 hover:ring-black/5 hover:ring-offset-[3px] hover:shadow-[0_16px_40px_rgba(0,62,147,0.12)] z-20 cursor-pointer" 
-                  : "border-t-4 border-transparent shadow-sm opacity-50 z-10 cursor-default"
-              }`}
-              style={{
-                transform: transformStr,
-                pointerEvents: isCenter ? 'auto' : 'none'
-              }}
-              onClick={() => isCenter && onSelect(version.description)}
-            >
-              <div className="flex-1 h-full flex flex-col pointer-events-none">
-                <div className="flex justify-between items-center mb-8">
-                  <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896] group-hover:text-[#003e93] transition-colors">
-                    버전 {version.id}
-                  </span>
+            return (
+              <div 
+                key={version.id}
+                className={`absolute top-2 w-full max-w-[600px] h-[500px] group flex flex-col justify-between bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
+                  isCenter 
+                    ? "border-t-4 border-transparent shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:border-[#003e93] hover:ring-1 hover:ring-black/5 hover:ring-offset-[3px] hover:shadow-[0_16px_40px_rgba(0,62,147,0.12)] z-20 cursor-pointer" 
+                    : "border-t-4 border-transparent shadow-sm opacity-50 z-10 cursor-default"
+                }`}
+                style={{
+                  transform: transformStr,
+                  pointerEvents: isCenter ? 'auto' : 'none'
+                }}
+                onClick={() => isCenter && onSelect(version.description)}
+              >
+                <div className="flex-1 h-full flex flex-col pointer-events-none">
+                  <div className="flex justify-between items-center mb-8">
+                    <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896] group-hover:text-[#003e93] transition-colors">
+                      버전 {version.id}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-[26px] font-medium text-[#191c1e] mb-6">
+                    {version.title}
+                  </h3>
+                  
+                  <div className="flex-1 mb-6 overflow-y-auto pr-3 custom-scrollbar">
+                    <p className="text-[18px] text-[#454652] leading-[32px]">
+                      {version.description}
+                    </p>
+                  </div>
                 </div>
-                
-                <h3 className="text-[26px] font-medium text-[#191c1e] mb-6">
-                  {version.title}
-                </h3>
-                
-                <div className="flex-1 mb-8 overflow-y-auto pr-3 custom-scrollbar">
-                  <p className="text-[18px] text-[#454652] leading-[32px]">
-                    {version.description}
-                  </p>
+
+                <div className="pt-2">
+                  <button 
+                    className={`w-full py-4 rounded-xl flex items-center justify-center gap-3 font-['Actor'] text-[18px] transition-all bg-[#e6e8ea] text-[#191c1e] ${isCenter ? 'group-hover:bg-[#003e93] group-hover:text-white group-hover:shadow-lg border border-transparent group-hover:border-[#003e93]' : ''}`}
+                  >
+                    이 버전 선택하기
+                    <CheckCircle className={`w-5 h-5 transition-colors ${isCenter ? 'text-gray-500 group-hover:text-white' : 'text-gray-400'}`} />
+                  </button>
                 </div>
               </div>
+            );
+          })}
 
-              <button 
-                className={`w-full py-5 rounded-xl flex items-center justify-center gap-3 font-['Actor'] text-[18px] transition-all bg-[#e6e8ea] text-[#191c1e] ${isCenter ? 'group-hover:bg-[#003e93] group-hover:text-white group-hover:shadow-lg border border-transparent group-hover:border-[#003e93]' : ''}`}
-              >
-                이 버전 선택하기
-                <CheckCircle className={`w-5 h-5 transition-colors ${isCenter ? 'text-gray-500 group-hover:text-white' : 'text-gray-400'}`} />
-              </button>
-            </div>
-          );
-        })}
-
-        {/* Right Arrow */}
-        <button 
-          onClick={() => setCurrentIndex(prev => prev < versions.length - 1 ? prev + 1 : 0)}
-          className="absolute right-[-20px] md:right-2 z-30 flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-100 text-[#454652] hover:text-[#003e93] hover:scale-105 transition-all"
-        >
-          <ChevronRight className="w-7 h-7" />
-        </button>
+          {/* Right Arrow */}
+          <button 
+            onClick={() => setCurrentIndex(prev => prev < versions.length - 1 ? prev + 1 : 0)}
+            className="absolute right-[10px] md:-right-4 z-30 flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-full bg-white shadow-lg border border-gray-100 text-[#454652] hover:text-[#003e93] hover:scale-105 transition-all"
+          >
+            <ChevronRight className="w-7 h-7" />
+          </button>
+        </div>
       </div>
 
       {/* Slide Indicators */}
-      <div className="w-full flex justify-center gap-3 mt-6">
+      <div className="w-full flex justify-center items-center gap-3 mt-4 h-4">
         {versions.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`w-3 h-3 rounded-full transition-all ${idx === currentIndex ? 'bg-[#003e93] w-8' : 'bg-[#e0e3e5] hover:bg-[#c5c5d4]'}`}
+            className={`h-3 rounded-full transition-all ${idx === currentIndex ? 'bg-[#003e93] w-8' : 'bg-[#e0e3e5] w-3 hover:bg-[#c5c5d4]'}`}
           />
         ))}
       </div>
