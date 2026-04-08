@@ -52,10 +52,14 @@ export function TopNavBar() {
 
             {/* Menu Items */}
             <div className="py-[4px] flex flex-col">
-              <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full">
+              <Link 
+                href="/dashboard/profile" 
+                onClick={() => setIsDropdownOpen(false)}
+                className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
+              >
                 <User className="w-[14px] h-[14px] text-gray-700" />
                 <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">프로필</span>
-              </button>
+              </Link>
               <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full">
                 <PieChart className="w-[14px] h-[14px] text-gray-700" />
                 <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">분석</span>
