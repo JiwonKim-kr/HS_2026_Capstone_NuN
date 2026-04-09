@@ -56,10 +56,14 @@ export function TopNavBar() {
                 <User className="w-[14px] h-[14px] text-gray-700" />
                 <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">프로필</span>
               </button>
-              <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full">
+              <Link 
+                href="/profile"
+                onClick={() => setIsDropdownOpen(false)}
+                className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
+              >
                 <PieChart className="w-[14px] h-[14px] text-gray-700" />
                 <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">분석</span>
-              </button>
+              </Link>
               <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full">
                 <Settings className="w-[14px] h-[14px] text-gray-700" />
                 <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">환경 설정</span>
