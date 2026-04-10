@@ -31,13 +31,14 @@ export function Sidebar() {
       </div>
 
       <div className="pt-2 w-full flex justify-center">
-        <button 
+        <a 
+          href="/"
           title={!isOpen ? "새 채팅" : undefined}
           className={`bg-white hover:bg-gray-50 transition-colors flex ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-3 rounded-lg shadow-sm w-full border border-gray-100`}
         >
           <Plus className="w-4 h-4 text-[#003e93] shrink-0" />
           {isOpen && <span className="font-medium text-[#003e93] text-sm whitespace-nowrap">새 채팅</span>}
-        </button>
+        </a>
       </div>
 
       <div className="pt-2 w-full flex-grow">
