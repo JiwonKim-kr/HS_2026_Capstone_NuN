@@ -24,7 +24,7 @@ export function TopNavBar() {
   return (
     <header className="absolute backdrop-blur-[12px] bg-[#f8f9fb]/80 flex items-center justify-between left-0 px-6 py-4 top-0 w-full z-40 border-b border-transparent">
       <div className="flex items-center">
-        <Link href="/">
+        <Link href="/dashboard">
           <h1 className="font-bold text-[#191c1e] text-[20px] tracking-[-1px] cursor-pointer hover:opacity-80 transition-opacity">
             Prompt-U
           </h1>
@@ -52,22 +52,26 @@ export function TopNavBar() {
 
             {/* Menu Items */}
             <div className="py-[4px] flex flex-col">
-              <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full">
-                <User className="w-[14px] h-[14px] text-gray-700" />
-                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">프로필</span>
-              </button>
               <Link 
-                href="/profile"
+                href="/dashboard/profile" 
                 onClick={() => setIsDropdownOpen(false)}
                 className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
               >
-                <PieChart className="w-[14px] h-[14px] text-gray-700" />
-                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">분석</span>
+                <User className="w-[14px] h-[14px] text-gray-700" />
+                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">프로필</span>
               </Link>
               <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full">
+                <PieChart className="w-[14px] h-[14px] text-gray-700" />
+                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">분석</span>
+              </button>
+              <Link 
+                href="/dashboard/settings" 
+                onClick={() => setIsDropdownOpen(false)}
+                className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
+              >
                 <Settings className="w-[14px] h-[14px] text-gray-700" />
                 <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">환경 설정</span>
-              </button>
+              </Link>
             </div>
 
             {/* Logout */}
