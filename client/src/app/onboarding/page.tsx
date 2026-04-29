@@ -28,20 +28,17 @@ export default function OnboardingPage() {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else {
-      // 가장 최신 유저 세션 가져오기
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-      if (currentUser) {
-        // 이미 생성된 users 레코드를 update
+      if (user) {
         const { error } = await supabase
           .from("users")
-          .update({
+          .upsert({
+            id: user.id,
             age_group: age,
             gender,
             job_role: job,
             primary_purpose: selectedPurposes.join(","),
-          })
-          .eq("id", currentUser.id);
+            preferred_style: selectedStyle,
+          }, { onConflict: "id" });
 
         if (error) {
           console.error("온보딩 저장 오류:", error.message);
