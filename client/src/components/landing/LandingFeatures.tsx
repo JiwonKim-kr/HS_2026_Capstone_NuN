@@ -99,7 +99,7 @@ export function LandingFeatures() {
                 </p>
               </div>
               <Link 
-                href="/onboarding"
+                href="/signup"
                 className="bg-white hover:bg-gray-100 transition-colors rounded-[8px] px-[16px] py-[8px] flex items-center justify-center"
               >
                 <span className="text-[#2b3896] text-[14px] leading-[20px]">맞춤형 프롬프트 만들기</span>
