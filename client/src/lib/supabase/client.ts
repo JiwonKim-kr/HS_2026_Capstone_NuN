@@ -1,7 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-// 브라우저 환경에서 싱글턴으로 사용할 Supabase 클라이언트
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// createBrowserClient는 세션을 cookies에 저장 → 미들웨어(SSR)가 읽을 수 있음
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);

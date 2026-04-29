@@ -92,11 +92,7 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 autoComplete="email"
-                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px]
-                           text-[16px] leading-normal text-[#191c1e] font-normal
-                           placeholder:text-[rgba(117,118,132,0.6)]
-                           focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white
-                           transition-colors duration-150"
+                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
               />
             </div>
 
@@ -116,11 +112,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="8자 이상의 영문, 숫자, 특수문자 조합"
                   autoComplete="new-password"
-                  className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px]
-                             text-[16px] leading-normal text-[#191c1e] font-normal
-                             placeholder:text-[rgba(117,118,132,0.6)]
-                             focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white
-                             transition-colors duration-150"
+                  className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
                 />
                 <button
                   type="button"
@@ -161,11 +153,7 @@ export default function SignupPage() {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="010-0000-0000"
                 autoComplete="tel"
-                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px]
-                           text-[16px] leading-normal text-[#191c1e] font-normal
-                           placeholder:text-[rgba(117,118,132,0.6)]
-                           focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white
-                           transition-colors duration-150"
+                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
               />
             </div>
 
@@ -173,12 +161,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-[56px] bg-[#3f51b5] hover:bg-[#3949a3] active:bg-[#303f9f]
-                         disabled:opacity-60 disabled:cursor-not-allowed
-                         rounded-[8px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]
-                         flex items-center justify-center
-                         text-white text-[18px] leading-[28px] font-normal
-                         transition-colors duration-150 cursor-pointer"
+              className="w-full h-[56px] bg-[#3f51b5] hover:bg-[#3949a3] active:bg-[#303f9f] disabled:opacity-60 disabled:cursor-not-allowed rounded-[8px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)] flex items-center justify-center text-white text-[18px] leading-[28px] font-normal transition-colors duration-150 cursor-pointer"
             >
               {loading ? "가입 처리 중..." : "회원가입 완료"}
             </button>
@@ -234,7 +217,7 @@ export default function SignupPage() {
             {/* 로그인 링크 */}
             <p className="text-center text-[14px] leading-[20px] text-[#757684]">
               이미 계정이 있으신가요?{" "}
-              <Link href="/login" className="text-[#3f51b5] font-semibold hover:underline">
+              <Link href="/" className="text-[#3f51b5] font-semibold hover:underline">
                 로그인
               </Link>
             </p>

@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
   // 세션이 없으면 로그인 페이지로 리다이렉트
   if (!session) {
     const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
+    loginUrl.pathname = "/";
     loginUrl.searchParams.set("next", pathname); // 로그인 후 원래 경로로 돌아오도록
     return NextResponse.redirect(loginUrl);
   }
