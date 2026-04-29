@@ -14,19 +14,7 @@ export function LandingNavbar() {
           </div>
         </div>
 
-        {/* Right Side: Actions */}
-        <div className="flex items-center gap-[16px]">
-          <Link href="/login" className="flex items-center justify-center px-[16px] py-[8px]">
-            <span className="text-[#454652] text-[16px] leading-[24px] hover:text-[#191c1e] transition-colors">
-              로그인
-            </span>
-          </Link>
-          <Link href="/onboarding" className="bg-[#003e93] flex flex-col items-center justify-center px-[24px] py-[8px] rounded-[8px] hover:bg-[#003682] transition-colors">
-            <span className="text-[16px] text-white leading-[24px] text-center">
-              시작하기
-            </span>
-          </Link>
-        </div>
+
       </div>
     </div>
   );
