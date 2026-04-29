@@ -8,7 +8,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
       <TopNavBar />
       <div className="flex h-full w-full pt-[72px]">
         <Sidebar />
-        <main className="flex-1 relative h-full flex flex-col justify-center px-8 lg:px-16 overflow-y-auto w-full">
+        <main className="flex-1 relative h-full flex flex-col px-8 lg:px-16 overflow-y-auto w-full">
           {children}
         </main>
       </div>
