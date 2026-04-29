@@ -87,7 +87,7 @@ export function LandingHero() {
               <div className="flex justify-center w-full">
                 <p className="text-[#454652] text-[14px] leading-[20px] text-center">
                   계정이 없으신가요?{' '}
-                  <a href="/onboarding" className="text-[#2b3896] hover:underline">무료로 시작하기</a>
+                  <a href="/signup" className="text-[#2b3896] hover:underline">무료로 시작하기</a>
                 </p>
               </div>
             </div>
