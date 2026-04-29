@@ -3,10 +3,21 @@
 import { ChevronDown, User, PieChart, Settings, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { supabase } from "@/lib/supabase/client";
 
 export function TopNavBar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setIsDropdownOpen(false);
+    router.push("/login");
+  };
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -47,7 +58,9 @@ export function TopNavBar() {
             {/* Account Info */}
             <div className="px-[16px] pb-[13px] pt-[12px] border-b border-[rgba(197,197,212,0.1)] flex flex-col gap-[2px]">
               <span className="text-[#64748b] text-[12px] font-medium tracking-[0.6px] uppercase">계정</span>
-              <span className="text-[#191c1e] text-[14px] font-bold tracking-[-0.35px] truncate">prompt1234@gmail.com</span>
+              <span className="text-[#191c1e] text-[14px] font-bold tracking-[-0.35px] truncate">
+                {user?.email ?? ""}
+              </span>
             </div>
 
             {/* Menu Items */}
@@ -80,7 +93,7 @@ export function TopNavBar() {
 
             {/* Logout */}
             <div className="pt-[5px] pb-[4px] border-t border-[rgba(197,197,212,0.1)] mt-[2px]">
-              <button className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-red-50 transition-colors text-left w-full group">
+              <button onClick={handleLogout} className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-red-50 transition-colors text-left w-full group">
                 <LogOut className="w-[14px] h-[14px] text-[#ba1a1a]" />
                 <span className="text-[#ba1a1a] text-[14px] font-medium tracking-[-0.35px]">로그아웃</span>
               </button>

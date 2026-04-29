@@ -8,9 +8,12 @@ import { FormSection } from "@/components/ui/FormSection";
 import { ToggleGroup } from "@/components/ui/ToggleGroup";
 import { SelectableCard } from "@/components/ui/SelectableCard";
 import { ActionFooter } from "@/components/onboarding/ActionFooter";
+import { supabase } from "@/lib/supabase/client";
+import { useAuth } from "@/lib/auth/AuthProvider";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
 
   // Form State
@@ -21,12 +24,32 @@ export default function OnboardingPage() {
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>("핵심만 간결하게");
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else {
-      // Step 2 finish logic (API call, redirect)
-      alert('온보딩 완료!');
+      // 가장 최신 유저 세션 가져오기
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+      if (currentUser) {
+        // 이미 생성된 users 레코드를 update
+        const { error } = await supabase
+          .from("users")
+          .update({
+            age_group: age,
+            gender,
+            job_role: job,
+            primary_purpose: selectedPurposes.join(","),
+          })
+          .eq("id", currentUser.id);
+
+        if (error) {
+          console.error("온보딩 저장 오류:", error.message);
+        }
+      } else {
+        console.warn("로그인된 사용자 정보가 없습니다.");
+      }
+
       router.push("/dashboard");
     }
   };
@@ -98,9 +121,21 @@ export default function OnboardingPage() {
           {/* Step 1: 커리어 맥락 */}
           <FormSection label="커리어 맥락" heading="현재 어떤 일을 하시나요?">
             <div className="mt-[8px] relative w-full">
-              <div className="bg-[#f2f4f6] h-[48px] rounded-[8px] flex items-center px-[16px] relative w-full cursor-pointer hover:bg-[#e9ecef] transition-colors">
-                <span className="text-[#191c1e] text-[16px]">직업군 선택</span>
-                <div className="absolute right-[16px] size-[24px]">
+              <div className="bg-[#f2f4f6] h-[48px] rounded-[8px] flex items-center px-[16px] relative w-full focus-within:border-[#003e93] border-2 border-transparent transition-colors">
+                <select
+                  value={job}
+                  onChange={(e) => setJob(e.target.value)}
+                  className="bg-transparent border-none outline-none text-[16px] text-[#191c1e] w-full appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>직업군 선택</option>
+                  <option value="학생">학생</option>
+                  <option value="개발자">개발자</option>
+                  <option value="디자이너">디자이너</option>
+                  <option value="기획자">기획자</option>
+                  <option value="마케터">마케터</option>
+                  <option value="기타">기타</option>
+                </select>
+                <div className="absolute right-[16px] size-[24px] pointer-events-none">
                   <Image src="/icons/chevron-down.svg" alt="Dropdown" fill className="object-contain" />
                 </div>
               </div>
