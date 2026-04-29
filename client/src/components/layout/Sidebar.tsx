@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, Plus, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
+  const pathname = usePathname();
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
 
   // 긴 원본 텍스트 사용, 화면 표시 시 꼬리표(...) 적용
@@ -50,16 +53,23 @@ export function Sidebar() {
           )}
           
           <div className="flex flex-col gap-1 w-full max-h-[512px] overflow-y-auto mt-2 overflow-x-hidden">
-            {visibleHistory.map((item, index) => (
-              <button 
-                key={index} 
-                title={!isOpen ? item : undefined}
-                className={`flex ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg hover:bg-gray-200 transition-colors w-full text-left`}
-              >
-                <MessageSquare className="w-4 h-4 text-gray-400 shrink-0" />
-                {isOpen && <span className="text-[#454652] truncate text-sm font-medium leading-normal pb-[2px]">{item}</span>}
-              </button>
-            ))}
+            {visibleHistory.map((item, index) => {
+              const href = `/dashboard/history/${index}`;
+              const isActive = pathname === href;
+              return (
+                <Link
+                  key={index}
+                  href={href}
+                  title={!isOpen ? item : undefined}
+                  className={`flex ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg transition-colors w-full text-left ${
+                    isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
+                  }`}
+                >
+                  <MessageSquare className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#003e93]' : 'text-gray-400'}`} />
+                  {isOpen && <span className={`truncate text-sm font-medium leading-normal pb-[2px] ${isActive ? 'text-[#003e93]' : 'text-[#454652]'}`}>{item}</span>}
+                </Link>
+              );
+            })}
 
             {showMoreButton && (
               <button 
