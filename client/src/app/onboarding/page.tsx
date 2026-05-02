@@ -140,7 +140,7 @@ export default function OnboardingPage() {
                   iconSrc={option.iconSrc}
                   isSelected={selectedStyle === option.value}
                   onClick={() => setSelectedStyle(option.value)}
-                  height="80px"
+                  height="84px"
                 />
               ))}
             </div>
