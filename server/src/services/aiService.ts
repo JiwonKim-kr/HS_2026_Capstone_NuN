@@ -185,9 +185,15 @@ export const generatePromptCandidates = async (
     });
 
     const variantLabels = ['exact', 'plus', 'minus'] as const;
+    const tierSets = [exactTiers, plusTiers, minusTiers];
+
     const candidates = result.output.candidates.map((c, i) => ({
       ...c,
-      metadata: { ...c.metadata, variant: variantLabels[i] ?? 'exact' },
+      metadata: { 
+        ...c.metadata, 
+        variant: variantLabels[i] ?? 'exact',
+        appliedTiers: tierSets[i] ?? exactTiers
+      },
     }));
 
     return {

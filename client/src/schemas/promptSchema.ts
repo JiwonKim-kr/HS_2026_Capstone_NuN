@@ -20,6 +20,12 @@ export const promptCandidateSchema = z.object({
     format: z.string(),
     length: z.string(),
     variant: z.enum(['exact', 'plus', 'minus']).optional(),
+    appliedTiers: z.object({
+      tone: z.number(),
+      level: z.number(),
+      density: z.number(),
+      creativity: z.number(),
+    }).optional(),
   }),
 });
 

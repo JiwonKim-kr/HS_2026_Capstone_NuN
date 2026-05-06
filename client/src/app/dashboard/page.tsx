@@ -107,7 +107,9 @@ export default function Home() {
         />
       ) : (
         <OptimizationResult
-          selectedText={selectedCandidate?.content ?? ""}
+          userId={user?.id ?? ""}
+          originalPrompt={submittedPrompt}
+          selectedCandidate={selectedCandidate}
           onRestart={handleRestart}
         />
       )}

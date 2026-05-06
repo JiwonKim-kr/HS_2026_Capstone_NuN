@@ -1,13 +1,76 @@
 "use client";
 
-import { CheckCircle2, Zap, Copy, Brain, Info } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Zap, Copy, Brain, Info, ThumbsUp } from "lucide-react";
+import { PromptCandidateType } from "@/schemas/promptSchema";
 
 interface OptimizationResultProps {
-  selectedText: string;
+  userId: string;
+  originalPrompt: string;
+  selectedCandidate: PromptCandidateType | null;
   onRestart: () => void;
 }
 
-export function OptimizationResult({ selectedText, onRestart }: OptimizationResultProps) {
+export function OptimizationResult({ userId, originalPrompt, selectedCandidate, onRestart }: OptimizationResultProps) {
+  const [isCopied, setIsCopied] = useState(false);
+  const [historyId, setHistoryId] = useState<string | null>(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+
+  const handleCopy = async () => {
+    if (!selectedCandidate) return;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(selectedCandidate.content);
+    setIsCopied(true);
+    
+    // Save history
+    if (!historyId) {
+      try {
+        const res = await fetch('/api/prompts/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            originalInput: originalPrompt,
+            chosenPrompt: selectedCandidate.content,
+            chosenMetadata: selectedCandidate.metadata,
+          })
+        });
+        const data = await res.json();
+        if (data.success && data.data?.historyId) {
+          setHistoryId(data.data.historyId);
+        }
+      } catch (e) {
+        console.error("Failed to save history", e);
+      }
+    }
+  };
+
+  const handleThumbsUp = async () => {
+    if (!historyId || !selectedCandidate?.metadata?.appliedTiers || isLiked || isLiking) return;
+    
+    setIsLiking(true);
+    try {
+      const res = await fetch('/api/prompts/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          historyId,
+          userId,
+          appliedTiers: selectedCandidate.metadata.appliedTiers
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setIsLiked(true);
+      }
+    } catch (e) {
+      console.error("Failed to submit feedback", e);
+    } finally {
+      setIsLiking(false);
+    }
+  };
   return (
     <div className="flex flex-col items-center w-full max-w-7xl mx-auto h-full pt-12 pb-16 px-6">
       
@@ -40,8 +103,8 @@ export function OptimizationResult({ selectedText, onRestart }: OptimizationResu
               <h2 className="text-[24px] text-[#191c1e]">고객 응대: 지연 안내 및 신뢰 회복</h2>
               
               <div className="bg-[#f2f4f6] border-l-4 border-[#003e93] rounded-lg p-6">
-                <p className="text-[#454652] text-[14px] leading-[28px]">
-                  {selectedText || "2주 연기에 관한 중요 고객 커뮤니케이션 초안을 작성하세요. 상황: 예상치 못한 기술적 부채. 과업: 극도의 투명성을 통해 신뢰 유지. 행동 유도: 다음 마일스톤에 대한 계층별 할인을 수락하도록 유도. 스토리텔링을 사용하여 지연을 품질 보증을 위한 성과로 프레임화하세요."}
+                <p className="text-[#454652] text-[14px] leading-[28px] whitespace-pre-wrap">
+                  {selectedCandidate?.content || "프롬프트 내용이 없습니다."}
                 </p>
               </div>
             </div>
@@ -55,13 +118,34 @@ export function OptimizationResult({ selectedText, onRestart }: OptimizationResu
                 새 프롬프트 시작
               </button>
               <button 
-                onClick={() => navigator.clipboard.writeText(selectedText)}
+                onClick={handleCopy}
                 className="bg-[#e4e2e1] text-[#656464] hover:bg-[#d5d3d2] flex gap-2 items-center justify-center px-8 py-3 rounded-lg transition-colors text-[16px]"
               >
                 <Copy className="w-4 h-4 text-gray-600" />
-                클립보드에 복사
+                {isCopied ? "복사 완료!" : "클립보드에 복사"}
               </button>
             </div>
+            
+            {/* Feedback UI */}
+            {isCopied && (
+              <div className="mt-2 pt-6 border-t border-[rgba(197,197,212,0.2)] flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <span className="text-[#454652] text-[16px] font-medium pl-2">
+                  이 프롬프트의 결과물이 마음에 드나요?
+                </span>
+                <button
+                  onClick={handleThumbsUp}
+                  disabled={isLiked || isLiking || !historyId}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-full transition-all ${
+                    isLiked 
+                      ? 'bg-[#003e93] text-white shadow-md' 
+                      : 'bg-[#f2f4f6] text-[#454652] border border-[rgba(197,197,212,0.3)] hover:bg-white hover:border-[#003e93] hover:text-[#003e93] hover:shadow-sm'
+                  }`}
+                >
+                  <ThumbsUp className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                  <span className="font-medium text-[15px]">{isLiked ? '피드백 반영 완료!' : '네, 마음에 들어요'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
