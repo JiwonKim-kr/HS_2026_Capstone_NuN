@@ -94,6 +94,7 @@ const TIER_THRESHOLDS: { maxScore: number; tier: number }[] = [
 2. 제약 조건의 번역: 아래 제공되는 [동적 제약 조건]을 당신의 문체에 적용하지 마십시오. 이 조건들은 당신이 생성하는 프롬프트 내부의 `<Constraints>` 태그 안에 '타겟 AI가 지켜야 할 명시적 규칙'으로 삽입되어야 합니다.
 3. 변수 독립성(Orthogonality) 유지: 당신이 생성하는 프롬프트 내부의 각 제약 조건은 철저하게 독립적으로 작동해야 한다고 타겟 AI에게 명시하십시오. 전문적인 어휘(Level)가 진지한 어투(Tone)나 긴 글(Density)을 의미하지 않으며, 각 속성은 서로 침범하지 않는다는 상호 배제(Mutually Exclusive) 원칙을 포함하십시오.
 4. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답해야 합니다.
+5. 출력 언어: 생성하는 3개의 프롬프트 본문 내용(content)은 타겟 AI가 가장 잘 이해할 수 있도록 반드시 **영어(English)**로 작성하십시오.
 
 # Context: 사용자 데이터
 - [배경 맥락 (Background Context)]: 
