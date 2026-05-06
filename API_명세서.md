@@ -1,9 +1,11 @@
-# 🚀 Prompt-U API Specification v1.0
+# Prompt-U API Specification v1.0
 
 본 문서는 **Prompt-U (개인화 AI 프롬프트 제너레이터)** 프로젝트의 프론트엔드(Next.js)와 백엔드(Node.js) 간 데이터 통신 규약을 정의한 명세서입니다.
 
 ## 1. 기본 정보 (General Info)
+
 * **Base URL**: `https://api.prompt-u.com/v1` (배포 환경: Railway)
+* **개발 서버**: `http://localhost:8080`
 * **Content-Type**: `application/json`
 * **Authentication**: `Authorization: Bearer <Supabase_JWT_Token>`
 
@@ -12,7 +14,8 @@
 ## 2. API Endpoints
 
 ### 2.1. 프롬프트 후보군 생성
-**AI 모델이 사용자의 입력과 개인 선호 지표를 결합하여 다듬어진 프롬프트 후보군을 생성합니다.**
+
+사용자의 초안 입력과 DB에서 조회한 개인 선호 가중치를 결합하여 다듬어진 프롬프트 후보군 3개를 생성합니다.
 
 * **URL**: `/api/prompts/generate`
 * **Method**: `POST`
@@ -29,7 +32,7 @@
 * **Response (200 OK)**:
 ```json
 {
-  "requestId": "uuid (이번 생성 요청의 고유 ID)",
+  "requestId": "uuid (이번 생성 요청의 고유 ID, 서버에서 생성)",
   "candidates": [
     {
       "candidateId": "1",
@@ -55,8 +58,9 @@
 
 ---
 
-### 2.2. 최적 프롬프트 선택 및 피드백 전송 (가중치 업데이트)
-**사용자가 선택한 프롬프트를 기록(`prompt_logs`)하고, 이를 긍정 피드백으로 인식하여 선호 지표 가중치(`user_preferences`)를 실시간 업데이트합니다.**
+### 2.2. 최적 프롬프트 선택 및 피드백 전송 (가중치 업데이트) — 미구현
+
+> **현재 미구현 상태입니다.** 사용자가 선택한 프롬프트를 기록(`prompt_logs`)하고, 선호 지표 가중치(`user_preferences`)를 업데이트하는 기능으로 향후 구현 예정입니다.
 
 * **URL**: `/api/prompts/select`
 * **Method**: `POST`
@@ -73,9 +77,7 @@
     "format": "string",
     "length": "string"
   },
-  "allCandidates": [
-    // 생성되었던 후보군 전체 배열 (로깅용)
-  ] 
+  "allCandidates": []
 }
 ```
 * **Response (200 OK)**:
@@ -92,8 +94,9 @@
 
 ---
 
-### 2.3. 사용자 선호 지표 조회
-**현재 데이터베이스에 구축된 사용자의 초기 및 누적 선호 지표 가중치를 조회합니다.**
+### 2.3. 사용자 선호 지표 조회 — 미구현
+
+> **현재 미구현 상태입니다.** 사용자의 선호 지표 가중치를 조회하는 기능으로 향후 구현 예정입니다.
 
 * **URL**: `/api/users/:userId/preferences`
 * **Method**: `GET`
@@ -122,14 +125,16 @@
 ---
 
 ## 3. 공통 에러 응답 (Error Handling)
-**Zod를 통한 데이터 검증 실패 또는 시스템 오류 시 반환되는 포맷입니다.**
+
+Zod를 통한 데이터 검증 실패 또는 시스템 오류 시 반환되는 포맷입니다.
 
 | Status Code | Error Code | Description |
 | :--- | :--- | :--- |
 | `400` | `INVALID_INPUT` | 요청 데이터 형식이 올바르지 않음 (Zod Validation Error) |
 | `401` | `UNAUTHORIZED` | 유효하지 않은 인증 토큰 (Supabase Auth 에러) |
-| `500` | `AI_SERVICE_ERROR` | Claude 3.5 Sonnet API 통신 장애 또는 타임아웃 |
+| `500` | `AI_SERVICE_ERROR` | claude-haiku-4-5 API 통신 장애 또는 타임아웃 |
 | `500` | `DB_ERROR` | Supabase 데이터베이스 쿼리 실행 실패 |
+| `503` | `PROXY_ERROR` | Next.js → Express 프록시 연결 실패 |
 
 **에러 응답 예시**:
 ```json
