@@ -14,22 +14,33 @@
 
 ## 2. 가중치 데이터 매핑 로직 (Data to Instruction Mapping)
 
-데이터베이스의 `user_preferences` 테이블 구조(실수형 `FLOAT8`)는 변경하지 않습니다. 백엔드(`aiService.ts`)에서 DB의 점수(0.0 ~ 2.0)를 조회한 뒤, 임계값(Threshold)에 따라 5단계의 문자열 지시문(Snippet)으로 치환합니다.
+데이터베이스의 `user_preferences` 테이블 구조(실수형 `FLOAT8`)는 변경하지 않습니다. 백엔드(`aiService.ts`)에서 DB의 점수(0.0 ~ 2.0)를 조회한 뒤, 임계값(Threshold)에 따라 1단계부터 5단계까지의 티어(Tier)로 분류합니다. 이후 각 티어를 기준으로 ±1 단계 조정한 추가 티어셋(TierSet)을 생성합니다.
 
-**임계값(Threshold) 적용 기준**
+**티어 임계값(Threshold) 배열 구조**
 
-* 기준점(1.0)을 중심으로 5구간 분리
+향후 티어 단계 확장을 대비하여 배열 기반의 동적 설정 구조를 따릅니다.
+
+```ts
+const TIER_THRESHOLDS: { maxScore: number; tier: number }[] = [
+  { maxScore: 0.5, tier: 1 },
+  { maxScore: 0.8, tier: 2 },
+  { maxScore: 1.2, tier: 3 },  // 중립 — snippet은 빈 문자열("")
+  { maxScore: 1.5, tier: 4 },
+  { maxScore: Infinity, tier: 5 },
+];
+```
+
 * **Tier 1 (매우 낮음):** `score <= 0.5`
 * **Tier 2 (낮음):** `0.5 < score <= 0.8`
-* **Tier 3 (중립/기본값):** `0.8 < score < 1.2` — 빈 문자열("") 반환 (토큰 절약 및 AI 자율성 보장)
-* **Tier 4 (높음):** `1.2 <= score < 1.5`
-* **Tier 5 (매우 높음):** `score >= 1.5`
+* **Tier 3 (중립/기본값):** `0.8 < score <= 1.2`
+* **Tier 4 (높음):** `1.2 < score <= 1.5`
+* **Tier 5 (매우 높음):** `score > 1.5`
 
 ---
 
 ## 3. 가중치 항목별 5단계 지시문 사전 (Instruction Dictionary)
 
-백엔드 로직에 하드코딩되어 조건에 따라 조립될 각 항목의 지시문 스니펫입니다.
+백엔드 로직에 `SnippetMap` 구조(티어 번호를 키값으로 가짐)로 하드코딩되어 조건에 따라 조립될 각 항목의 지시문입니다.
 
 ### 3-1. 답변 어투 (Tone) — 감정, 말투, 포맷팅 제어
 
@@ -90,17 +101,22 @@
   - 사용 목적: {{USER_PURPOSE}}
 - [초안 프롬프트]: "{{USER_DRAFT}}"
 
-- [동적 제약 조건 (타겟 AI에게 강제할 지시문)]:
-{{TONE_CONSTRAINT}}
-{{LEVEL_CONSTRAINT}}
-{{DENSITY_CONSTRAINT}}
-{{CREATIVITY_CONSTRAINT}}
+# 후보별 제약 조건
+- [후보 1 제약 조건 (사용자 선호 정확 반영)]:
+{{EXACT_CONSTRAINTS}}
+
+- [후보 2 제약 조건 (+1 단계 상향 조정)]:
+{{PLUS_CONSTRAINTS}}
+
+- [후보 3 제약 조건 (-1 단계 하향 조정)]:
+{{MINUS_CONSTRAINTS}}
 
 # Generation Strategy (후보군 3개 생성 전략)
-사용자가 다양한 접근 방식을 선택할 수 있도록, 3개의 각기 다른 프롬프트를 생성하십시오. (3개 모두 위 [동적 제약 조건]은 반드시 포함해야 합니다.)
-- Candidate 1 (정석적 최적화): [초안 프롬프트]의 핵심 의도를 깔끔하게 구조화한 형태. 
-- Candidate 2 (포맷/구조 강화): 타겟 AI가 마크다운 구조, 표(Table), 단계별(Step-by-Step) 출력 등을 사용하도록 지시하여 시각적 가독성을 극대화한 형태.
-- Candidate 3 (창의적 페르소나): 타겟 AI에게 매우 독특한 페르소나를 부여하여 색다른 관점을 이끌어내는 형태.
+아래 [후보별 제약 조건]을 각 후보에 정확히 적용하여 프롬프트 3개를 생성하십시오.
+- Candidate 1 (메인): [후보 1 제약 조건]만 적용. 이 후보가 사용자에게 가장 먼저 표시됩니다.
+- Candidate 2 (상향 조정): [후보 2 제약 조건]만 적용.
+- Candidate 3 (하향 조정): [후보 3 제약 조건]만 적용.
+각 후보는 반드시 자신에게 할당된 제약 조건만을 따르고, 다른 후보의 제약 조건과 혼합하지 마십시오.
 ```
 
 ---
@@ -109,7 +125,7 @@
 
 1. **Input:** 클라이언트로부터 `userInput`(초안)과 `userId` 수신.
 2. **Fetch Data:** Supabase에서 유저 프로필(`users` 테이블: `job_role`, `primary_purpose`)과 4개 가중치(`user_preferences` 테이블) 병렬 조회.
-3. **Parse & Map:** 4개의 가중치 값을 임계값 로직(`mapToSnippet`)으로 지시문 문자열 변환. (Tier 3 중립값은 "" 처리)
-4. **Assemble:** 정적 시스템 프롬프트(`STATIC_SYSTEM_PROMPT`)와 동적 컨텍스트(`buildDynamicContext`)를 조립.
+3. **Parse & Map:** 4개의 가중치 값을 임계값 로직(`getTier`)으로 각각의 기준 티어로 변환(exactTiers). 이후 `shiftTier` 함수를 이용해 +1단계 상향 조정된 티어셋(plusTiers)과 -1단계 하향 조정된 티어셋(minusTiers) 생성.
+4. **Assemble:** 정적 시스템 프롬프트(`STATIC_SYSTEM_PROMPT`)와 후보 1, 2, 3별 제약조건이 삽입된 동적 컨텍스트(`buildDynamicContext`)를 조립.
 5. **AI Request:** `@ai-sdk/anthropic`의 `generateText`를 호출 (모델: `claude-haiku-4-5`). Zod 스키마(`Output.object`)를 사용하여 출력물이 JSON 배열(Candidate 1, 2, 3) 형태로 오도록 무결성 강제.
-6. **Return:** AI 출력에 서버 생성 `requestId`(`randomUUID()`)를 병합하여 프론트엔드에 후보군 3개와 메타데이터 반환.
+6. **Return:** AI 출력 배열의 각 요소 `metadata`에 `variant` 라벨(`exact`, `plus`, `minus`)을 주입하고 서버 생성 `requestId`(`randomUUID()`)를 병합하여 프론트엔드에 최종 반환.

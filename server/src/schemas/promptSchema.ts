@@ -19,6 +19,7 @@ export const promptCandidateSchema = z.object({
     tone: z.string(),
     format: z.string(),
     length: z.string(),
+    variant: z.enum(['exact', 'plus', 'minus']).optional(),
   }),
 });
 
