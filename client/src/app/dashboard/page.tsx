@@ -7,11 +7,17 @@ import { ContextFilters } from "@/components/prompt/ContextFilters";
 import { SuggestionBar } from "@/components/prompt/SuggestionBar";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { OptimizationResult } from "@/components/analysis/OptimizationResult";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { PromptCandidateType } from "@/schemas/promptSchema";
 
 export default function Home() {
+  const { user } = useAuth();
   const [view, setView] = useState<'draft' | 'analysis' | 'optimized'>('draft');
   const [submittedPrompt, setSubmittedPrompt] = useState("");
-  const [selectedVersion, setSelectedVersion] = useState("");
+  const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<PromptCandidateType | null>(null);
 
   const [activeContexts, setActiveContexts] = useState<string[]>([
     "대화형 어투",
@@ -30,19 +36,39 @@ export default function Home() {
     setActiveContexts(prev => [...prev, tag]);
   };
 
-  const handlePromptSubmit = (text: string) => {
+  const handlePromptSubmit = async (text: string) => {
     setSubmittedPrompt(text);
+    setCandidates([]);
+    setAnalysisError(null);
+    setAnalysisLoading(true);
     setView('analysis');
+
+    try {
+      const res = await fetch('/api/prompts/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user!.id, originalInput: text }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || '생성 실패');
+      setCandidates(json.data.candidates);
+    } catch (err: any) {
+      setAnalysisError(err.message);
+    } finally {
+      setAnalysisLoading(false);
+    }
   };
 
-  const handleVersionSelect = (text: string) => {
-    setSelectedVersion(text);
+  const handleVersionSelect = (candidate: PromptCandidateType) => {
+    setSelectedCandidate(candidate);
     setView('optimized');
   };
 
   const handleRestart = () => {
     setSubmittedPrompt("");
-    setSelectedVersion("");
+    setCandidates([]);
+    setSelectedCandidate(null);
+    setAnalysisError(null);
     setView('draft');
   };
 
@@ -72,14 +98,17 @@ export default function Home() {
           </div>
         </div>
       ) : view === 'analysis' ? (
-        <AnalysisResult 
-          originalPrompt={submittedPrompt} 
-          onSelect={handleVersionSelect} 
+        <AnalysisResult
+          originalPrompt={submittedPrompt}
+          candidates={candidates}
+          loading={analysisLoading}
+          error={analysisError}
+          onSelect={handleVersionSelect}
         />
       ) : (
-        <OptimizationResult 
-          selectedText={selectedVersion} 
-          onRestart={handleRestart} 
+        <OptimizationResult
+          selectedText={selectedCandidate?.content ?? ""}
+          onRestart={handleRestart}
         />
       )}
     </>

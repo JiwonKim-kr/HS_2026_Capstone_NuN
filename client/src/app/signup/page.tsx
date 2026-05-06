@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -10,13 +11,33 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 회원가입 API 연결
-    console.log({ email, password, phone });
+    setError(null);
+    setLoading(true);
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { phone },
+      },
+    });
+
+    if (error) {
+      setError(error.message === "User already registered"
+        ? "이미 가입된 이메일입니다. 로그인 페이지로 이동해 주세요."
+        : error.message);
+      setLoading(false);
+      return;
+    }
+
     router.push("/onboarding");
   };
+
 
   return (
     <div className="relative min-h-screen w-full bg-[#f8f9fb] flex flex-col">
@@ -49,6 +70,13 @@ export default function SignupPage() {
           {/* 회원가입 폼 */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full">
 
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="w-full rounded-[8px] bg-[#fff1f1] border border-[#ffb3b3] px-4 py-3 text-[14px] text-[#ba1a1a] leading-[20px]">
+                {error}
+              </div>
+            )}
+
             {/* 이메일 필드 */}
             <div className="flex flex-col gap-2 w-full">
               <label
@@ -64,11 +92,7 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 autoComplete="email"
-                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px]
-                           text-[16px] leading-normal text-[#191c1e] font-normal
-                           placeholder:text-[rgba(117,118,132,0.6)]
-                           focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white
-                           transition-colors duration-150"
+                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
               />
             </div>
 
@@ -88,11 +112,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="8자 이상의 영문, 숫자, 특수문자 조합"
                   autoComplete="new-password"
-                  className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px]
-                             text-[16px] leading-normal text-[#191c1e] font-normal
-                             placeholder:text-[rgba(117,118,132,0.6)]
-                             focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white
-                             transition-colors duration-150"
+                  className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
                 />
                 <button
                   type="button"
@@ -133,24 +153,17 @@ export default function SignupPage() {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="010-0000-0000"
                 autoComplete="tel"
-                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px]
-                           text-[16px] leading-normal text-[#191c1e] font-normal
-                           placeholder:text-[rgba(117,118,132,0.6)]
-                           focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white
-                           transition-colors duration-150"
+                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
               />
             </div>
 
             {/* 회원가입 완료 버튼 */}
             <button
               type="submit"
-              className="w-full h-[56px] bg-[#3f51b5] hover:bg-[#3949a3] active:bg-[#303f9f]
-                         rounded-[8px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)]
-                         flex items-center justify-center
-                         text-white text-[18px] leading-[28px] font-normal
-                         transition-colors duration-150 cursor-pointer"
+              disabled={loading}
+              className="w-full h-[56px] bg-[#3f51b5] hover:bg-[#3949a3] active:bg-[#303f9f] disabled:opacity-60 disabled:cursor-not-allowed rounded-[8px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)] flex items-center justify-center text-white text-[18px] leading-[28px] font-normal transition-colors duration-150 cursor-pointer"
             >
-              회원가입 완료
+              {loading ? "가입 처리 중..." : "회원가입 완료"}
             </button>
 
             {/* 소셜 로그인 구분선 */}
@@ -161,16 +174,15 @@ export default function SignupPage() {
               </span>
             </div>
 
-            {/* Google 소셜 버튼 */}
+            {/* Google 소셜 버튼 (추후 구현 예정 — 현재 비활성) */}
             <button
               type="button"
+              disabled
+              title="추후 지원 예정"
               className="w-full h-[48px] border border-[#c5c5d4] rounded-[8px]
                          flex items-center justify-center gap-2
-                         hover:bg-[#f2f4f6] active:bg-[#e8eaed]
-                         transition-colors duration-150 cursor-pointer"
-              onClick={() => {
-                // TODO: Google OAuth 연결
-              }}
+                         opacity-50 cursor-not-allowed
+                         transition-colors duration-150"
             >
               {/* Google 아이콘 (SVG inline) */}
               <svg
@@ -201,6 +213,14 @@ export default function SignupPage() {
                 Google 계정으로 시작하기
               </span>
             </button>
+
+            {/* 로그인 링크 */}
+            <p className="text-center text-[14px] leading-[20px] text-[#757684]">
+              이미 계정이 있으신가요?{" "}
+              <Link href="/" className="text-[#3f51b5] font-semibold hover:underline">
+                로그인
+              </Link>
+            </p>
           </form>
         </div>
       </main>

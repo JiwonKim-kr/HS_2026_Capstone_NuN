@@ -1,4 +1,32 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+
 export function LandingHero() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      setLoading(false);
+      return;
+    }
+
+    router.push("/dashboard");
+  };
+
   return (
     <section className="relative w-full flex justify-center pt-[128px] pb-[80px] px-[24px] overflow-hidden">
       <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-[48px] w-full max-w-[1280px] min-h-[573px] relative z-10">
@@ -44,9 +72,14 @@ export function LandingHero() {
               <p className="text-[#454652] text-[14px] leading-[20px]">
                 Prompt-U 와 함께 여정을 계속하세요.
               </p>
+              {error && (
+                <div className="mt-[8px] w-full rounded-[8px] bg-[#fff1f1] border border-[#ffb3b3] px-4 py-3 text-[14px] text-[#ba1a1a] leading-[20px]">
+                  {error}
+                </div>
+              )}
             </div>
 
-            <form className="flex flex-col gap-[24px] w-full">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-[24px] w-full">
               <div className="relative h-[76px] w-full">
                 <label className="absolute left-[4px] top-[9.5px] -translate-y-1/2 text-[#454652] text-[14px] leading-[20px]">
                   이메일 주소
@@ -54,7 +87,11 @@ export function LandingHero() {
                 <div className="absolute top-[28px] bg-[#e0e3e5] px-[16px] py-[14px] rounded-[8px] w-full border-2 border-transparent focus-within:border-[#003e93] transition-colors">
                   <input
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
+                    autoComplete="email"
+                    required
                     className="w-full bg-transparent outline-none border-none text-[16px] text-gray-900 placeholder:text-[rgba(117,118,132,0.5)]"
                   />
                 </div>
@@ -67,14 +104,22 @@ export function LandingHero() {
                 <div className="absolute top-[28px] bg-[#e0e3e5] px-[16px] py-[14px] rounded-[8px] w-full border-2 border-transparent focus-within:border-[#003e93] transition-colors">
                   <input
                     type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
+                    autoComplete="current-password"
+                    required
                     className="w-full bg-transparent outline-none border-none text-[16px] text-gray-900 placeholder:text-[rgba(117,118,132,0.5)]"
                   />
                 </div>
               </div>
 
-              <button type="button" className="bg-[#003e93] text-white text-[16px] font-bold leading-[24px] py-[16px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-[#003682] transition-colors font-['Manrope'] w-full">
-                로그인
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[#003e93] text-white text-[16px] font-bold leading-[24px] py-[16px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-[#003682] disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-['Manrope'] w-full"
+              >
+                {loading ? "로그인 중..." : "로그인"}
               </button>
             </form>
 
