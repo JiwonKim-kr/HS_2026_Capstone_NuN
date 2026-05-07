@@ -2,13 +2,17 @@ import Image from "next/image";
 
 interface StepNavigationProps {
   currentStep: number;
+  onStepChange?: (step: number) => void;
 }
 
-export function StepNavigation({ currentStep }: StepNavigationProps) {
+export function StepNavigation({ currentStep, onStepChange }: StepNavigationProps) {
   return (
     <div className="flex flex-col gap-[16px] w-full">
       {/* Step 1 */}
-      <div className={`flex gap-[16px] items-center w-full ${currentStep === 1 ? '' : 'opacity-40'}`}>
+      <button 
+        onClick={() => onStepChange?.(1)}
+        className={`flex gap-[16px] items-center w-full text-left transition-opacity ${currentStep === 1 ? '' : 'opacity-40 cursor-pointer hover:opacity-70'}`}
+      >
         {currentStep === 1 ? (
           <div className="bg-[#003e93] flex items-center justify-center rounded-full size-[32px]">
             <span className="font-semibold text-[12px] text-white">1</span>
@@ -23,10 +27,13 @@ export function StepNavigation({ currentStep }: StepNavigationProps) {
             기본 인적사항
           </span>
         </div>
-      </div>
+      </button>
 
       {/* Step 2 */}
-      <div className={`flex gap-[16px] items-center w-full ${currentStep === 2 ? '' : 'opacity-40'}`}>
+      <button 
+        onClick={() => onStepChange?.(2)}
+        className={`flex gap-[16px] items-center w-full text-left transition-opacity ${currentStep === 2 ? '' : 'opacity-40 cursor-pointer hover:opacity-70'}`}
+      >
         {currentStep === 2 ? (
           <div className="bg-[#003e93] flex items-center justify-center rounded-full size-[32px]">
             <span className="font-semibold text-[12px] text-white">2</span>
@@ -41,7 +48,7 @@ export function StepNavigation({ currentStep }: StepNavigationProps) {
             주요 활용 목적
           </span>
         </div>
-      </div>
+      </button>
     </div>
   );
 }
