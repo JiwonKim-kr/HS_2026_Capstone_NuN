@@ -41,35 +41,17 @@ router.post('/generate', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-import { savePromptHistory, processFeedback } from '../services/feedbackService';
-
-// ... (existing code, I will replace the bottom part)
-router.post('/history', async (req: Request, res: Response): Promise<void> => {
-  try {
-    // We can use Zod, but for speed just trusting req.body here or do simple validation
-    const { userId, originalInput, chosenPrompt, chosenMetadata } = req.body;
-    if (!userId || !originalInput || !chosenPrompt) {
-      res.status(400).json({ success: false, error: 'Missing required fields' });
-      return;
-    }
-
-    const result = await savePromptHistory({ userId, originalInput, chosenPrompt, chosenMetadata });
-    res.status(200).json({ success: true, data: result });
-  } catch (error: any) {
-    console.error('History Save Error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
+import { processFeedback } from '../services/feedbackService';
 
 router.post('/feedback', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { historyId, userId, appliedTiers } = req.body;
-    if (!historyId || !userId || !appliedTiers) {
-      res.status(400).json({ success: false, error: 'Missing required fields' });
+    const { historyId, userId, appliedTiers, targetLikeStatus } = req.body;
+    if (!historyId || !userId || !appliedTiers || typeof targetLikeStatus !== 'boolean') {
+      res.status(400).json({ success: false, error: 'Missing required fields or invalid format' });
       return;
     }
 
-    const result = await processFeedback({ historyId, userId, appliedTiers });
+    const result = await processFeedback({ historyId, userId, appliedTiers, targetLikeStatus });
     res.status(200).json({ success: true, data: result });
   } catch (error: any) {
     console.error('Feedback Error:', error);

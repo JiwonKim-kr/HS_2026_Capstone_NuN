@@ -6,18 +6,16 @@ import { DraftEditor } from "@/components/prompt/DraftEditor";
 import { ContextFilters } from "@/components/prompt/ContextFilters";
 import { SuggestionBar } from "@/components/prompt/SuggestionBar";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
-import { OptimizationResult } from "@/components/analysis/OptimizationResult";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PromptCandidateType } from "@/schemas/promptSchema";
 
 export default function Home() {
   const { user } = useAuth();
-  const [view, setView] = useState<'draft' | 'analysis' | 'optimized'>('draft');
+  const [view, setView] = useState<'draft' | 'analysis'>('draft');
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [selectedCandidate, setSelectedCandidate] = useState<PromptCandidateType | null>(null);
 
   const [activeContexts, setActiveContexts] = useState<string[]>([
     "대화형 어투",
@@ -59,15 +57,9 @@ export default function Home() {
     }
   };
 
-  const handleVersionSelect = (candidate: PromptCandidateType) => {
-    setSelectedCandidate(candidate);
-    setView('optimized');
-  };
-
   const handleRestart = () => {
     setSubmittedPrompt("");
     setCandidates([]);
-    setSelectedCandidate(null);
     setAnalysisError(null);
     setView('draft');
   };
@@ -97,19 +89,13 @@ export default function Home() {
             <SuggestionBar suggestions={suggestions} onAdd={handleAddContext} />
           </div>
         </div>
-      ) : view === 'analysis' ? (
+      ) : (
         <AnalysisResult
+          userId={user?.id ?? ""}
           originalPrompt={submittedPrompt}
           candidates={candidates}
           loading={analysisLoading}
           error={analysisError}
-          onSelect={handleVersionSelect}
-        />
-      ) : (
-        <OptimizationResult
-          userId={user?.id ?? ""}
-          originalPrompt={submittedPrompt}
-          selectedCandidate={selectedCandidate}
           onRestart={handleRestart}
         />
       )}

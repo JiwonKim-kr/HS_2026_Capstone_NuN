@@ -15,7 +15,7 @@ const TIER_THRESHOLDS: { maxScore: number; tier: number }[] = [
   { maxScore: 0.8, tier: 2 },
   { maxScore: 1.2, tier: 3 },  // 중립 — snippet은 빈 문자열
   { maxScore: 1.5, tier: 4 },
-  { maxScore: Infinity, tier: 5 },
+  { maxScore: 2.0, tier: 5 },
 ];
 
 const MIN_TIER = TIER_THRESHOLDS[0].tier;
@@ -75,9 +75,9 @@ type TierSet = { tone: number; level: number; density: number; creativity: numbe
 
 function buildConstraintSet(tiers: TierSet): string {
   const lines = [
-    getSnippetByTier(tiers.tone,       TONE_SNIPPETS),
-    getSnippetByTier(tiers.level,      LEVEL_SNIPPETS),
-    getSnippetByTier(tiers.density,    DENSITY_SNIPPETS),
+    getSnippetByTier(tiers.tone, TONE_SNIPPETS),
+    getSnippetByTier(tiers.level, LEVEL_SNIPPETS),
+    getSnippetByTier(tiers.density, DENSITY_SNIPPETS),
     getSnippetByTier(tiers.creativity, CREATIVITY_SNIPPETS),
   ].filter(Boolean);
   return lines.length ? lines.join('\n') : '(없음 — 전 항목 중립, 타겟 AI 자율)';
@@ -145,25 +145,33 @@ export const generatePromptCandidates = async (
       .single(),
     supabase
       .from('user_preferences')
-      .select('tone, level, density, creativity')
-      .eq('user_id', userId)
-      .single(),
+      .select('category, weight_score')
+      .eq('user_id', userId),
   ]);
 
-  const job     = profileResult.data?.job_role       ?? context?.domain ?? '명시되지 않음';
+  const job = profileResult.data?.job_role ?? context?.domain ?? '명시되지 않음';
   const purpose = profileResult.data?.primary_purpose ?? '명시되지 않음';
 
-  // user_preferences 없으면 전부 1.0 (중립 → 빈 스니펫)
-  const prefs = prefsResult.data ?? { tone: 1.0, level: 1.0, density: 1.0, creativity: 1.0 };
+  // user_preferences mapping
+  const defaultPrefs = { tone: 1.0, level: 1.0, density: 1.0, creativity: 1.0 };
+  const prefs = { ...defaultPrefs };
+
+  if (prefsResult.data) {
+    prefsResult.data.forEach((row) => {
+      if (row.category && row.category in prefs) {
+        prefs[row.category as keyof typeof prefs] = row.weight_score;
+      }
+    });
+  }
 
   // 2. 가중치 → 스니펫 변환 및 ±1 티어 설정
   const exactTiers: TierSet = {
-    tone:       getTier(prefs.tone),
-    level:      getTier(prefs.level),
-    density:    getTier(prefs.density),
+    tone: getTier(prefs.tone),
+    level: getTier(prefs.level),
+    density: getTier(prefs.density),
     creativity: getTier(prefs.creativity),
   };
-  const plusTiers:  TierSet = { tone: shiftTier(exactTiers.tone, +1), level: shiftTier(exactTiers.level, +1), density: shiftTier(exactTiers.density, +1), creativity: shiftTier(exactTiers.creativity, +1) };
+  const plusTiers: TierSet = { tone: shiftTier(exactTiers.tone, +1), level: shiftTier(exactTiers.level, +1), density: shiftTier(exactTiers.density, +1), creativity: shiftTier(exactTiers.creativity, +1) };
   const minusTiers: TierSet = { tone: shiftTier(exactTiers.tone, -1), level: shiftTier(exactTiers.level, -1), density: shiftTier(exactTiers.density, -1), creativity: shiftTier(exactTiers.creativity, -1) };
 
   // 3. 동적 컨텍스트 조립
@@ -172,7 +180,7 @@ export const generatePromptCandidates = async (
     purpose,
     draft: originalInput,
     exactConstraints: buildConstraintSet(exactTiers),
-    plusConstraints:  buildConstraintSet(plusTiers),
+    plusConstraints: buildConstraintSet(plusTiers),
     minusConstraints: buildConstraintSet(minusTiers),
   });
 
@@ -189,16 +197,45 @@ export const generatePromptCandidates = async (
 
     const candidates = result.output.candidates.map((c, i) => ({
       ...c,
-      metadata: { 
-        ...c.metadata, 
+      metadata: {
+        ...c.metadata,
         variant: variantLabels[i] ?? 'exact',
         appliedTiers: tierSets[i] ?? exactTiers
       },
     }));
 
+    // DB에 3개 후보군 개별 삽입
+    const sessionId = randomUUID();
+    const insertPayloads = candidates.map((c) => ({
+      session_id: sessionId,
+      user_id: userId,
+      original_input: originalInput,
+      chosen_prompt: c.content,
+      chosen_metadata: c.metadata,
+      applied_context: c.metadata.appliedTiers || {},
+      is_liked: false,
+      is_weight_applied: false
+    }));
+
+    const { data: insertedLogs, error: insertError } = await supabase
+      .from('prompt_logs')
+      .insert(insertPayloads)
+      .select('id, chosen_metadata');
+
+    if (insertError) {
+      console.error('Error inserting prompt_logs:', insertError);
+      throw new Error('프롬프트 로그 저장 중 오류가 발생했습니다.');
+    }
+
+    // 삽입된 log_id 매핑
+    const finalCandidates = candidates.map((c) => {
+      const logId = insertedLogs?.find((l) => l.chosen_metadata.variant === c.metadata.variant)?.id;
+      return { ...c, logId };
+    });
+
     return {
       requestId: randomUUID(),
-      candidates,
+      candidates: finalCandidates,
     };
   } catch (error) {
     console.error('Error generating prompts via AI SDK:', error);

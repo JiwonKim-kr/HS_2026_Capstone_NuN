@@ -14,6 +14,7 @@ export type GeneratePromptRequestType = z.infer<typeof generatePromptRequestSche
 // AI가 응답에 담아 보낼 개별 프롬프트 후보군 스키마
 export const promptCandidateSchema = z.object({
   candidateId: z.string().describe('후보 고유 ID'),
+  logId: z.string().uuid().optional().describe('DB에 저장된 prompt_logs ID'),
   content: z.string().describe('최적화된 프롬프트 내용'),
   metadata: z.object({
     tone: z.string(),

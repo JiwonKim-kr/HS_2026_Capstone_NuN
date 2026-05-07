@@ -13,35 +13,6 @@ const TIER_REPRESENTATIVE_SCORES: Record<number, number> = {
   5: 1.75,
 };
 
-export const savePromptHistory = async (params: {
-  userId: string;
-  originalInput: string;
-  chosenPrompt: string;
-  chosenMetadata: any;
-}) => {
-  const { data, error } = await supabase
-    .from('prompt_logs')
-    .insert([
-      {
-        user_id: params.userId,
-        original_input: params.originalInput,
-        chosen_prompt: params.chosenPrompt,
-        chosen_metadata: params.chosenMetadata,
-        // applied_context is also in DB, we can optionally store it or just rely on chosen_metadata
-        applied_context: params.chosenMetadata?.appliedTiers || {},
-      }
-    ])
-    .select('id')
-    .single();
-
-  if (error) {
-    console.error('Error saving prompt history:', error);
-    throw new Error('Failed to save prompt history');
-  }
-
-  return { historyId: data.id };
-};
-
 export const processFeedback = async (params: {
   historyId: string;
   userId: string;
@@ -51,11 +22,31 @@ export const processFeedback = async (params: {
     density: number;
     creativity: number;
   };
+  targetLikeStatus: boolean;
 }) => {
-  // 1. Mark prompt_logs as liked
+  // 1. Fetch current prompt_log to check if weight was already applied
+  const { data: logData, error: logError } = await supabase
+    .from('prompt_logs')
+    .select('is_weight_applied')
+    .eq('id', params.historyId)
+    .single();
+
+  if (logError) {
+    console.error('Error fetching prompt_log:', logError);
+    throw new Error('Failed to verify feedback status');
+  }
+
+  const shouldApplyWeight = params.targetLikeStatus && !logData.is_weight_applied;
+
+  // 2. Update prompt_logs flags
+  const updatePayload: any = { is_liked: params.targetLikeStatus };
+  if (shouldApplyWeight) {
+    updatePayload.is_weight_applied = true;
+  }
+
   const { error: updateError } = await supabase
     .from('prompt_logs')
-    .update({ is_liked: true })
+    .update(updatePayload)
     .eq('id', params.historyId);
 
   if (updateError) {
@@ -63,39 +54,66 @@ export const processFeedback = async (params: {
     throw new Error('Failed to update feedback status');
   }
 
-  // 2. Fetch current user preferences
+  // If we shouldn't apply weight (e.g. un-liking, or already applied before), we are done.
+  if (!shouldApplyWeight) {
+    return { success: true };
+  }
+
+  // 3. Fetch current user preferences
   const { data: prefsData, error: prefsError } = await supabase
     .from('user_preferences')
-    .select('*')
-    .eq('user_id', params.userId)
-    .single();
+    .select('id, category, weight_score')
+    .eq('user_id', params.userId);
 
   if (prefsError) {
     console.error('Error fetching user_preferences:', prefsError);
-    // If no row exists, we might insert one, or just ignore. We will throw for now.
     throw new Error('Failed to fetch user preferences');
   }
 
-  // Calculate midpoints
-  const newTone = (prefsData.tone + (TIER_REPRESENTATIVE_SCORES[params.appliedTiers.tone] ?? 1.0)) / 2;
-  const newLevel = (prefsData.level + (TIER_REPRESENTATIVE_SCORES[params.appliedTiers.level] ?? 1.0)) / 2;
-  const newDensity = (prefsData.density + (TIER_REPRESENTATIVE_SCORES[params.appliedTiers.density] ?? 1.0)) / 2;
-  const newCreativity = (prefsData.creativity + (TIER_REPRESENTATIVE_SCORES[params.appliedTiers.creativity] ?? 1.0)) / 2;
+  const existingPrefs = prefsData || [];
+  const categories: (keyof typeof params.appliedTiers)[] = ['tone', 'level', 'density', 'creativity'];
 
-  const { error: updatePrefsError } = await supabase
-    .from('user_preferences')
-    .update({
-      tone: newTone,
-      level: newLevel,
-      density: newDensity,
-      creativity: newCreativity,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', prefsData.id);
+  const existingRows = [];
+  const newRows = [];
 
-  if (updatePrefsError) {
-    console.error('Error updating user_preferences:', updatePrefsError);
-    throw new Error('Failed to update user weights');
+  for (const cat of categories) {
+    const existingRow = existingPrefs.find(p => p.category === cat);
+    const currentScore = existingRow ? existingRow.weight_score : 1.0;
+    const representativeScore = TIER_REPRESENTATIVE_SCORES[params.appliedTiers[cat]] ?? 1.0;
+    const newScore = (currentScore + representativeScore) / 2;
+
+    if (existingRow) {
+      existingRows.push({
+        id: existingRow.id,
+        user_id: params.userId,
+        category: cat,
+        weight_score: newScore,
+        updated_at: new Date().toISOString()
+      });
+    } else {
+      newRows.push({
+        user_id: params.userId,
+        category: cat,
+        weight_score: newScore,
+        updated_at: new Date().toISOString()
+      });
+    }
+  }
+
+  if (existingRows.length > 0) {
+    const { error } = await supabase.from('user_preferences').upsert(existingRows);
+    if (error) {
+      console.error('Error updating user_preferences:', error);
+      throw new Error('Failed to update user weights');
+    }
+  }
+
+  if (newRows.length > 0) {
+    const { error } = await supabase.from('user_preferences').insert(newRows);
+    if (error) {
+      console.error('Error inserting user_preferences:', error);
+      throw new Error('Failed to create user weights');
+    }
   }
 
   return { success: true };
