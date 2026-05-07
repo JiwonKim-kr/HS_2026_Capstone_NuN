@@ -16,7 +16,7 @@ export function TopNavBar() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsDropdownOpen(false);
-    router.push("/login");
+    router.push("/");
   };
 
   // 외부 클릭 시 드롭다운 닫기
