@@ -50,6 +50,7 @@ export default function Home() {
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || '생성 실패');
       setCandidates(json.data.candidates);
+      window.dispatchEvent(new Event('prompt-generated'));
     } catch (err: any) {
       setAnalysisError(err.message);
     } finally {

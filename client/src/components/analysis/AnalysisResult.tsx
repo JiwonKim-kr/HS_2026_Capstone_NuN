@@ -124,7 +124,7 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
         <>
           {/* Candidate Card 3D Carousel Wrapper */}
           <div className="w-full relative py-6">
-            <div className="relative w-full max-w-[1000px] mx-auto h-[540px] flex items-center justify-center">
+            <div className="relative w-full max-w-[1000px] mx-auto h-[480px] flex items-center justify-center">
 
               {/* Left Arrow */}
               <button
@@ -150,9 +150,9 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
                 return (
                   <div
                     key={candidate.candidateId}
-                    className={`absolute top-2 w-full max-w-[600px] h-[500px] group flex flex-col justify-between bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
+                    className={`absolute top-2 w-full max-w-[600px] h-[450px] flex flex-col bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
                       isCenter
-                        ? "border-t-4 border-[#003e93] shadow-[0_8px_30px_rgba(0,0,0,0.08)] ring-1 ring-black/5 ring-offset-[3px] shadow-[0_16px_40px_rgba(0,62,147,0.12)] z-20"
+                        ? "border-t-4 border-[#003e93] shadow-[0_8px_30px_rgba(0,0,0,0.08)] z-20 cursor-default"
                         : "border-t-4 border-transparent shadow-sm opacity-50 z-10 cursor-pointer"
                     }`}
                     style={{
@@ -161,47 +161,51 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
                     }}
                     onClick={() => !isCenter && setCurrentIndex(idx)}
                   >
-                    <div className="flex-1 h-full flex flex-col pointer-events-none">
-                      <div className="flex justify-between items-center mb-8">
-                        <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#003e93] transition-colors">
-                          버전 {String(idx + 1).padStart(2, '0')}
-                        </span>
-                      </div>
-
-                      <h3 className="text-[26px] font-medium text-[#191c1e] mb-6">
-                        {candidate.metadata.tone}
-                      </h3>
-
-                      <div className="flex-1 mb-6 overflow-y-auto pr-3 custom-scrollbar pointer-events-auto">
-                        <p className="text-[18px] text-[#454652] leading-[32px]">
-                          {candidate.content}
-                        </p>
-                      </div>
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896] transition-colors">
+                        버전 {String(idx + 1).padStart(2, '0')}
+                      </span>
                     </div>
 
-                    <div className="pt-2 flex gap-3">
-                      <button
+                    <div className="flex-1 overflow-y-auto pr-2 mb-6 custom-scrollbar">
+                      <p className="text-[16px] text-[#454652] leading-[28px] whitespace-pre-wrap">
+                        {candidate.content}
+                      </p>
+                    </div>
+
+                    {/* Inline Action Buttons */}
+                    <div className="flex gap-3 pt-4 border-t border-gray-100 mt-auto">
+                      <button 
                         onClick={(e) => { e.stopPropagation(); handleCopy(candidate); }}
-                        className={`flex-1 py-4 rounded-xl flex items-center justify-center gap-3 font-['Actor'] text-[18px] transition-all border ${
+                        className={`flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 ${
                           isCopied 
-                            ? 'bg-[#e0f8e0] text-[#145d14] border-[#145d14]' 
-                            : 'bg-[#e6e8ea] text-[#191c1e] border-transparent hover:bg-[#d5d7d9]'
+                            ? 'bg-green-50 text-green-600 border border-green-200' 
+                            : 'bg-[#f8f9fb] text-[#454652] hover:bg-[#e9ecef] border border-transparent'
                         }`}
                       >
-                        {isCopied ? "복사완료!" : "복사하기"}
-                        {isCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5 text-gray-500" />}
+                        {isCopied ? (
+                          <>
+                            <Check className="w-5 h-5 text-green-500" />
+                            복사완료!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-5 h-5" />
+                            이 프롬프트 복사하기
+                          </>
+                        )}
                       </button>
 
-                      <button
+                      <button 
                         onClick={(e) => { e.stopPropagation(); handleToggleLike(candidate); }}
-                        className={`px-6 py-4 rounded-xl flex items-center justify-center gap-2 font-['Actor'] text-[18px] transition-all border shadow-sm ${
-                          isLiked 
-                            ? 'bg-[#10b981] text-white border-[#10b981] hover:bg-[#059669]' 
-                            : 'bg-white text-[#454652] border-gray-200 hover:bg-gray-50 hover:text-[#003e93] hover:border-[#003e93]'
+                        className={`py-3 px-6 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 border ${
+                          isLiked
+                            ? 'bg-green-50 text-green-700 border-green-300 shadow-sm'
+                            : 'bg-white text-[#757684] border-gray-200 hover:bg-gray-50'
                         }`}
                         title={isLiked ? "추천 취소" : "이 프롬프트 추천하기"}
                       >
-                        <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                        <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-green-600 text-green-600' : ''}`} />
                       </button>
                     </div>
                   </div>
