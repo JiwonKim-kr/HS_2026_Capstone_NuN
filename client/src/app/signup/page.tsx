@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -9,14 +9,66 @@ export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (phone) {
+      const phoneRegex = /^\d+$/;
+      if (!phoneRegex.test(phone)) setPhoneError("전화번호는 숫자만 입력해야 합니다.");
+      else setPhoneError(null);
+    } else {
+      setPhoneError(null);
+    }
+  }, [phone]);
+
+  useEffect(() => {
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) setEmailError("올바른 이메일(도메인) 형식이어야 합니다.");
+      else setEmailError(null);
+    } else {
+      setEmailError(null);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (password) {
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+      if (!passwordRegex.test(password)) setPasswordError("8자 이상의 영문, 숫자, 특수문자 조합이어야 합니다.");
+      else setPasswordError(null);
+    } else {
+      setPasswordError(null);
+    }
+  }, [password]);
+
+  useEffect(() => {
+    if (confirmPassword) {
+      if (password !== confirmPassword) setConfirmPasswordError("비밀번호가 일치하지 않습니다.");
+      else setConfirmPasswordError(null);
+    } else {
+      setConfirmPasswordError(null);
+    }
+  }, [password, confirmPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!email || !password || !confirmPassword || !phone || emailError || passwordError || confirmPasswordError || phoneError) {
+      setError("모든 필드를 올바르게 입력해주세요.");
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase.auth.signUp({
@@ -92,8 +144,9 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 autoComplete="email"
-                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
+                className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${emailError ? "border border-[#ba1a1a]" : ""}`}
               />
+              {emailError && <span className="text-[12px] text-[#ba1a1a]">{emailError}</span>}
             </div>
 
             {/* 비밀번호 필드 */}
@@ -112,7 +165,7 @@ export default function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="8자 이상의 영문, 숫자, 특수문자 조합"
                   autoComplete="new-password"
-                  className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
+                  className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${passwordError ? "border border-[#ba1a1a]" : ""}`}
                 />
                 <button
                   type="button"
@@ -136,6 +189,50 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
+              {passwordError && <span className="text-[12px] text-[#ba1a1a]">{passwordError}</span>}
+            </div>
+
+            {/* 비밀번호 확인 필드 */}
+            <div className="flex flex-col gap-2 w-full">
+              <label
+                htmlFor="confirmPassword"
+                className="text-[14px] leading-[20px] font-normal text-[#454652]"
+              >
+                비밀번호 확인
+              </label>
+              <div className="relative w-full">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="비밀번호를 다시 입력해주세요"
+                  autoComplete="new-password"
+                  className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${confirmPasswordError ? "border border-[#ba1a1a]" : ""}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#757684] hover:text-[#454652] transition-colors"
+                  aria-label={showConfirmPassword ? "비밀번호 확인 숨기기" : "비밀번호 확인 보기"}
+                >
+                  {showConfirmPassword ? (
+                    // eye-off icon
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  ) : (
+                    // eye icon
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {confirmPasswordError && <span className="text-[12px] text-[#ba1a1a]">{confirmPasswordError}</span>}
             </div>
 
             {/* 전화번호 필드 */}
@@ -151,10 +248,11 @@ export default function SignupPage() {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="010-0000-0000"
+                placeholder="01012345678 (숫자만 입력)"
                 autoComplete="tel"
-                className="w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150"
+                className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${phoneError ? "border border-[#ba1a1a]" : ""}`}
               />
+              {phoneError && <span className="text-[12px] text-[#ba1a1a]">{phoneError}</span>}
             </div>
 
             {/* 회원가입 완료 버튼 */}
