@@ -20,7 +20,8 @@ export const promptCandidateSchema = z.object({
     tone: z.string(),
     format: z.string(),
     length: z.string(),
-    variant: z.enum(['exact', 'plus', 'minus']).optional(),
+    variant: z.enum(['exact', 'variant_a', 'variant_b']).optional(),
+    tierDescription: z.string().optional(),
     appliedTiers: z.object({
       tone: z.number(),
       level: z.number(),

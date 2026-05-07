@@ -73,6 +73,40 @@ function getSnippetByTier(tier: number, snippets: SnippetMap): string {
 
 type TierSet = { tone: number; level: number; density: number; creativity: number };
 
+// ── 한글 티어 레이블 (카드 상단 설명 생성용) ─────────────────────────────────
+const TIER_LABELS: Record<keyof TierSet, Record<number, string | null>> = {
+  tone:       { 1: '극도 건조', 2: '격식체', 3: null, 4: '친근한 어투', 5: '유머러스' },
+  level:      { 1: '입문자용 어휘', 2: '초보자용 어휘', 3: null, 4: '전공자 어휘', 5: '최고 전문가 어휘' },
+  density:    { 1: '초압축 요약', 2: '간략 설명', 3: null, 4: '상세 서술', 5: '극도 상세' },
+  creativity: { 1: '정석적 접근', 2: '표준 접근', 3: null, 4: '창의적 접근', 5: '파격적 접근' },
+};
+
+function buildTierDescription(tiers: TierSet): string {
+  const labels = (Object.keys(TIER_LABELS) as (keyof TierSet)[])
+    .map(k => TIER_LABELS[k][tiers[k]] ?? null)
+    .filter((l): l is string => l !== null);
+  return labels.length ? labels.join(' · ') : '중립형';
+}
+
+function generateRandomVariantTiers(exactTiers: TierSet, exclude?: TierSet): TierSet {
+  const keys: (keyof TierSet)[] = ['tone', 'level', 'density', 'creativity'];
+  for (let i = 0; i < 15; i++) {
+    const variant = {} as TierSet;
+    for (const k of keys) {
+      const delta = Math.floor(Math.random() * 3) - 1; // -1, 0, +1
+      variant[k] = shiftTier(exactTiers[k], delta);
+    }
+    const diffFromExact = keys.some(k => variant[k] !== exactTiers[k]);
+    const diffFromExclude = !exclude || keys.some(k => variant[k] !== exclude[k]);
+    if (diffFromExact && diffFromExclude) return variant;
+  }
+  // 폴백: 한 차원이라도 반드시 exact와 다르게 강제
+  const fallback = { ...exactTiers };
+  const k = keys[Math.floor(Math.random() * keys.length)];
+  fallback[k] = shiftTier(exactTiers[k], exactTiers[k] < MAX_TIER ? 1 : -1);
+  return fallback;
+}
+
 function buildConstraintSet(tiers: TierSet): string {
   const lines = [
     getSnippetByTier(tiers.tone, TONE_SNIPPETS),
@@ -100,8 +134,8 @@ const STATIC_SYSTEM_PROMPT = `# Role
 # Generation Strategy (후보군 3개 생성 전략)
 아래 [후보별 제약 조건]을 각 후보에 정확히 적용하여 프롬프트 3개를 생성하십시오.
 - Candidate 1 (메인): [후보 1 제약 조건]만 적용. 이 후보가 사용자에게 가장 먼저 표시됩니다.
-- Candidate 2 (상향 조정): [후보 2 제약 조건]만 적용.
-- Candidate 3 (하향 조정): [후보 3 제약 조건]만 적용.
+- Candidate 2 (변형 A): [후보 2 제약 조건]만 적용.
+- Candidate 3 (변형 B): [후보 3 제약 조건]만 적용.
 각 후보는 반드시 자신에게 할당된 제약 조건만을 따르고, 다른 후보의 제약 조건과 혼합하지 마십시오.`;
 
 // ── 동적 컨텍스트 조립 ────────────────────────────────────────────────────────
@@ -110,8 +144,8 @@ function buildDynamicContext(params: {
   purpose: string;
   draft: string;
   exactConstraints: string;
-  plusConstraints: string;
-  minusConstraints: string;
+  variantAConstraints: string;
+  variantBConstraints: string;
 }): string {
   return `# Context: 사용자 데이터
 - [배경 맥락 (Background Context)]:
@@ -123,11 +157,11 @@ function buildDynamicContext(params: {
 - [후보 1 제약 조건 (사용자 선호 정확 반영)]:
 ${params.exactConstraints}
 
-- [후보 2 제약 조건 (+1 단계 상향 조정)]:
-${params.plusConstraints}
+- [후보 2 제약 조건 (변형 A)]:
+${params.variantAConstraints}
 
-- [후보 3 제약 조건 (-1 단계 하향 조정)]:
-${params.minusConstraints}`;
+- [후보 3 제약 조건 (변형 B)]:
+${params.variantBConstraints}`;
 }
 
 // ── 메인 서비스 함수 ──────────────────────────────────────────────────────────
@@ -171,8 +205,8 @@ export const generatePromptCandidates = async (
     density: getTier(prefs.density),
     creativity: getTier(prefs.creativity),
   };
-  const plusTiers: TierSet = { tone: shiftTier(exactTiers.tone, +1), level: shiftTier(exactTiers.level, +1), density: shiftTier(exactTiers.density, +1), creativity: shiftTier(exactTiers.creativity, +1) };
-  const minusTiers: TierSet = { tone: shiftTier(exactTiers.tone, -1), level: shiftTier(exactTiers.level, -1), density: shiftTier(exactTiers.density, -1), creativity: shiftTier(exactTiers.creativity, -1) };
+  const variantATiers = generateRandomVariantTiers(exactTiers);
+  const variantBTiers = generateRandomVariantTiers(exactTiers, variantATiers);
 
   // 3. 동적 컨텍스트 조립
   const dynamicContext = buildDynamicContext({
@@ -180,8 +214,8 @@ export const generatePromptCandidates = async (
     purpose,
     draft: originalInput,
     exactConstraints: buildConstraintSet(exactTiers),
-    plusConstraints: buildConstraintSet(plusTiers),
-    minusConstraints: buildConstraintSet(minusTiers),
+    variantAConstraints: buildConstraintSet(variantATiers),
+    variantBConstraints: buildConstraintSet(variantBTiers),
   });
 
   try {
@@ -192,15 +226,16 @@ export const generatePromptCandidates = async (
       prompt: dynamicContext,
     });
 
-    const variantLabels = ['exact', 'plus', 'minus'] as const;
-    const tierSets = [exactTiers, plusTiers, minusTiers];
+    const variantLabels = ['exact', 'variant_a', 'variant_b'] as const;
+    const tierSets = [exactTiers, variantATiers, variantBTiers];
 
     const candidates = result.output.candidates.map((c, i) => ({
       ...c,
       metadata: {
         ...c.metadata,
         variant: variantLabels[i] ?? 'exact',
-        appliedTiers: tierSets[i] ?? exactTiers
+        appliedTiers: tierSets[i] ?? exactTiers,
+        tierDescription: buildTierDescription(tierSets[i] ?? exactTiers),
       },
     }));
 

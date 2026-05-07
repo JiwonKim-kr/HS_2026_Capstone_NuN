@@ -211,9 +211,16 @@ export default function HistoryDetailPage({
                 }}
               >
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896]">
-                    버전 {candidate.candidateId}
-                  </span>
+                  <div>
+                    <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896]">
+                      버전 {candidate.candidateId}
+                    </span>
+                    {candidate.metadata?.tierDescription && (
+                      <p className="text-xs text-[#757684] mt-1">
+                        {candidate.metadata.tierDescription}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 mb-6">

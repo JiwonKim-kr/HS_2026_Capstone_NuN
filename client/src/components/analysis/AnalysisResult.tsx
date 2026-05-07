@@ -162,9 +162,16 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
                     onClick={() => !isCenter && setCurrentIndex(idx)}
                   >
                     <div className="flex justify-between items-center mb-6">
-                      <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896] transition-colors">
-                        버전 {String(idx + 1).padStart(2, '0')}
-                      </span>
+                      <div>
+                        <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896] transition-colors">
+                          버전 {String(idx + 1).padStart(2, '0')}
+                        </span>
+                        {candidate.metadata.tierDescription && (
+                          <p className="text-xs text-[#757684] mt-1">
+                            {candidate.metadata.tierDescription}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto pr-2 mb-6 custom-scrollbar">
