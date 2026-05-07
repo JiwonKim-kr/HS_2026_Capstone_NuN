@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DraftEditor } from "@/components/prompt/DraftEditor";
-import { ContextFilters } from "@/components/prompt/ContextFilters";
-import { SuggestionBar } from "@/components/prompt/SuggestionBar";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PromptCandidateType } from "@/schemas/promptSchema";
@@ -16,23 +14,6 @@ export default function Home() {
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-
-  const [activeContexts, setActiveContexts] = useState<string[]>([
-    "대화형 어투",
-    "보고서형 어투",
-    "창의적인 답변"
-  ]);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-
-  const handleRemoveContext = (tag: string) => {
-    setActiveContexts(prev => prev.filter(c => c !== tag));
-    setSuggestions(prev => [...prev, tag]);
-  };
-
-  const handleAddContext = (tag: string) => {
-    setSuggestions(prev => prev.filter(s => s !== tag));
-    setActiveContexts(prev => [...prev, tag]);
-  };
 
   const handlePromptSubmit = async (text: string) => {
     setSubmittedPrompt(text);
@@ -82,12 +63,6 @@ export default function Home() {
           {/* Main Canvas Area */}
           <div className="w-full relative flex flex-col items-center">
             <DraftEditor onSubmit={handlePromptSubmit} />
-            <ContextFilters contexts={activeContexts} onRemove={handleRemoveContext} />
-          </div>
-
-          {/* Floating Suggestions */}
-          <div className="w-full flex justify-center mt-12 mb-8 h-[40px]">
-            <SuggestionBar suggestions={suggestions} onAdd={handleAddContext} />
           </div>
         </div>
       ) : (
