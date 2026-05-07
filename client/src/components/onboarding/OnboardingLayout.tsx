@@ -4,9 +4,10 @@ import { StepNavigation } from "./StepNavigation";
 interface OnboardingLayoutProps {
   children: ReactNode;
   currentStep: number;
+  onStepChange?: (step: number) => void;
 }
 
-export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProps) {
+export function OnboardingLayout({ children, currentStep, onStepChange }: OnboardingLayoutProps) {
   // Title text depends on step
   const title = currentStep === 1 
     ? "나만의 AI 프롬프터를\n만들어보세요." 
@@ -55,7 +56,7 @@ export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProp
                   사용자 경험을 맞춤화하세요. 이 데이터는 사용자의 전문 분야에 맞춰 Prompt-U를 튜닝하는 데 사용됩니다.
                 </p>
               </div>
-              <StepNavigation currentStep={currentStep} />
+              <StepNavigation currentStep={currentStep} onStepChange={onStepChange} />
             </div>
           </div>
 

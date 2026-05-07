@@ -4,9 +4,10 @@ interface ActionFooterProps {
   onNext: () => void;
   onSkip?: () => void;
   nextLabel?: string;
+  disabled?: boolean;
 }
 
-export function ActionFooter({ onNext, onSkip, nextLabel = "계속하기" }: ActionFooterProps) {
+export function ActionFooter({ onNext, onSkip, nextLabel = "계속하기", disabled }: ActionFooterProps) {
   return (
     <div className="flex items-center justify-between w-full pt-[24px] relative border-t border-t-transparent">
       {/* We use flex layout to place buttons. The continues button is centrally aligned or explicitly offset in Figma but let's make it standard right/left or centered.
@@ -19,7 +20,8 @@ export function ActionFooter({ onNext, onSkip, nextLabel = "계속하기" }: Act
       <div className="flex items-center justify-center gap-4">
         <button
           onClick={onNext}
-          className="bg-[#003e93] flex gap-[8px] items-center px-[32px] py-[12px] rounded-[8px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] hover:bg-[#003682] transition-colors"
+          disabled={disabled}
+          className={`flex gap-[8px] items-center px-[32px] py-[12px] rounded-[8px] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)] transition-colors ${disabled ? 'bg-[#c5c5d4] cursor-not-allowed text-[#757684]' : 'bg-[#003e93] hover:bg-[#003682]'}`}
         >
           <span className="text-[16px] text-white leading-[24px]">
             {nextLabel}
