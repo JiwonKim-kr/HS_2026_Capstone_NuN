@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sparkles, Edit2, Copy, Check, ThumbsUp, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { PromptCandidateType } from "@/schemas/promptSchema";
+
+const LOADING_MESSAGES = [
+  '프롬프트를 다듬는 중...',
+  '글자를 깎는 중...',
+  '취향을 반영하는 중...',
+  '특징을 추출하는 중...',
+  '문장을 조율하는 중...',
+  '최적의 구조를 찾는 중...',
+];
 
 interface AnalysisResultProps {
   userId: string;
@@ -17,6 +26,24 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedStatus, setLikedStatus] = useState<Record<string, boolean>>({});
+  const [msgIndex, setMsgIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
+  const [msgVisible, setMsgVisible] = useState(true);
+
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setMsgVisible(false);
+      setTimeout(() => {
+        setMsgIndex(prev => {
+          let next = Math.floor(Math.random() * LOADING_MESSAGES.length);
+          if (next === prev) next = (prev + 1) % LOADING_MESSAGES.length;
+          return next;
+        });
+        setMsgVisible(true);
+      }, 400);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleCopy = async (candidate: PromptCandidateType) => {
     try {
@@ -113,8 +140,14 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
 
       {/* Candidate Area */}
       {loading ? (
-        <div className="w-full flex items-center justify-center h-[540px]">
+        <div className="w-full flex flex-col items-center justify-center gap-4 h-[540px]">
           <div className="w-10 h-10 border-4 border-[#003e93] border-t-transparent rounded-full animate-spin" />
+          <p
+            style={{ opacity: msgVisible ? 1 : 0, transition: 'opacity 400ms ease-in-out' }}
+            className="text-[14px] text-gray-400"
+          >
+            {LOADING_MESSAGES[msgIndex]}
+          </p>
         </div>
       ) : error ? (
         <div className="w-full flex items-center justify-center h-[540px]">
