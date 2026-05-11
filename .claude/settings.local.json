@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"d:\\\\TeamNuN\\\\HS_2026_Capstone_NuN\\\\node_modules\" -ErrorAction SilentlyContinue | ForEach-Object { $_.Name + \" \\(\" + $_.Attributes + \"\\)\" })",
+      "PowerShell(Get-ChildItem \"d:\\\\TeamNuN\\\\HS_2026_Capstone_NuN\" -Force | Where-Object { $_.Name -ne \"client\" -and $_.Name -ne \"server\" -and $_.Name -ne \"supabase\" -and $_.Name -ne \"node_modules\" } | Select-Object Name, Attributes)",
+      "PowerShell(node -e \"console.log\\(require.resolve.toString\\(\\)\\)\" 2>&1)",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "PowerShell(npm config get prefix)",
+      "PowerShell(npm config get cache)",
+      "Bash(grep -o '.\\\\{0,200\\\\}dirname.\\\\{0,200\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/postcss/dist/index.js\")",
+      "Bash(find \"d:/TeamNuN\" -maxdepth 1 -name \"package-lock.json\" -o -name \"pnpm-lock.yaml\" -o -name \"yarn.lock\" -o -name \"bun.lock\" 2>/dev/null)",
+      "Read(//d/TeamNuN/**)",
+      "Bash(grep -o '.\\\\{0,100\\\\}resolve\\\\b.\\\\{0,100\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o '.\\\\{0,300\\\\}function St.\\\\{0,300\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o 'Ue=.\\\\{0,200\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o '.\\\\{0,200\\\\}De\\(.\\\\{0,100\\\\}tailwind.\\\\{0,100\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o '.\\\\{0,300\\\\}compileAst.\\\\{0,100\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o '.\\\\{0,200\\\\}Tt\\(r\\).\\\\{0,200\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o 'Tt=.\\\\{0,400\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o 'function Tt.\\\\{0,500\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/@tailwindcss/node/dist/index.js\")",
+      "Bash(grep -o '.\\\\{0,200\\\\}__tw_resolve.\\\\{0,200\\\\}' \"d:/TeamNuN/HS_2026_Capstone_NuN/client/node_modules/next/dist/server/lib/dev-bundler-service.js\")"
+    ]
+  }
+}

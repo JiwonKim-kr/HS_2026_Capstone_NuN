@@ -14,11 +14,20 @@ export type GeneratePromptRequestType = z.infer<typeof generatePromptRequestSche
 // AI가 응답에 담아 보낼 개별 프롬프트 후보군 스키마
 export const promptCandidateSchema = z.object({
   candidateId: z.string().describe('후보 고유 ID'),
+  logId: z.string().uuid().optional().describe('DB에 저장된 prompt_logs ID'),
   content: z.string().describe('최적화된 프롬프트 내용'),
   metadata: z.object({
     tone: z.string(),
     format: z.string(),
     length: z.string(),
+    variant: z.enum(['exact', 'variant_a', 'variant_b']).optional(),
+    tierDescription: z.string().optional(),
+    appliedTiers: z.object({
+      tone: z.number(),
+      level: z.number(),
+      density: z.number(),
+      creativity: z.number(),
+    }).optional(),
   }),
 });
 

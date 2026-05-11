@@ -1,45 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generatePromptRequestSchema } from '@/schemas/promptSchema';
-import { generateOptimizedPrompt } from '@/services/ai/generate';
-import { z } from 'zod';
+
+const EXPRESS_API_URL = process.env.EXPRESS_API_URL;
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. 요청 Body 파싱
     const body = await req.json();
 
-    // 2. Zod를 활용한 유효성 검증
-    const validatedData = generatePromptRequestSchema.parse(body);
-
-    // 3. AI 파트 (Vercel AI SDK: generateObject 실행)
-    // - 비즈니스 로직 분리를 위해 Service 층 호출
-    const result = await generateOptimizedPrompt(validatedData);
-
-    // 4. 결과 반환 (이미 Schema에 맞는 JSON 형태임이 보장됨)
-    return NextResponse.json({
-      success: true,
-      data: result,
+    const res = await fetch(`${EXPRESS_API_URL}/api/prompts/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
-  } catch (error: any) {
-    // Zod 에러 처리 (검증 실패 시)
-    if (error instanceof z.ZodError) {
+
+    const data = await res.json();
+
+    if (!res.ok) {
       return NextResponse.json(
-        {
-          success: false,
-          error: '입력 데이터가 유효하지 않습니다.',
-          details: error instanceof z.ZodError ? error.flatten().fieldErrors : undefined,
-        },
-        { status: 400 }
+        { success: false, error: data?.error?.message || '서버 오류' },
+        { status: res.status }
       );
     }
-    
-    console.error('[API] 프롬프트 생성 오류:', error);
+
+    return NextResponse.json({ success: true, data });
+  } catch (error: any) {
+    console.error('[Proxy] Express 서버 연결 실패:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error.message || '서버 내부 오류가 발생했습니다.',
-      },
-      { status: 500 }
+      { success: false, error: '프롬프트 서버에 연결할 수 없습니다.' },
+      { status: 503 }
     );
   }
 }

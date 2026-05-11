@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f9fb;
+  --foreground: #191c1e;
+
+  /* Prompt-U design tokens */
+  --color-primary: #003e93;
+  --color-text-primary: #191c1e;
+  --color-text-secondary: #454652;
+  --color-text-muted: #757684;
+  --color-surface: #ffffff;
+  --color-input-bg: #f2f4f6;
+  --color-border: #e0e3e5;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-noto-sans-kr), var(--font-geist-sans), sans-serif;
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-manrope: var(--font-manrope), sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-noto-sans-kr), "Noto Sans KR", Arial, sans-serif;
 }
+

@@ -41,4 +41,60 @@ router.post('/generate', async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+import { processFeedback } from '../services/feedbackService';
+import { getUserSessions, getSessionDetails } from '../services/historyService';
+
+router.get('/history/:userId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      res.status(400).json({ success: false, error: 'User ID is required' });
+      return;
+    }
+
+    const sessions = await getUserSessions(userId as string);
+    res.status(200).json({ success: true, data: sessions });
+  } catch (error: any) {
+    console.error('Fetch History Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.get('/history/detail/:sessionId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { sessionId } = req.params;
+    if (!sessionId) {
+      res.status(400).json({ success: false, error: 'Session ID is required' });
+      return;
+    }
+
+    const sessionDetails = await getSessionDetails(sessionId as string);
+    if (!sessionDetails) {
+      res.status(404).json({ success: false, error: 'Session not found' });
+      return;
+    }
+
+    res.status(200).json({ success: true, data: sessionDetails });
+  } catch (error: any) {
+    console.error('Fetch History Detail Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/feedback', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { historyId, userId, appliedTiers, targetLikeStatus } = req.body;
+    if (!historyId || !userId || !appliedTiers || typeof targetLikeStatus !== 'boolean') {
+      res.status(400).json({ success: false, error: 'Missing required fields or invalid format' });
+      return;
+    }
+
+    const result = await processFeedback({ historyId, userId, appliedTiers, targetLikeStatus });
+    res.status(200).json({ success: true, data: result });
+  } catch (error: any) {
+    console.error('Feedback Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
