@@ -133,7 +133,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
 
         {/* 새 채팅 버튼 — 아이콘 고정 위치, 텍스트만 페이드 */}
         <div className="px-3 pb-2 shrink-0">
-          <Link
+          <a
             href="/dashboard"
             title={!isOpen ? t("sidebar.new_chat") : undefined}
             className="bg-white hover:bg-gray-50 transition-colors flex items-center gap-3 px-3 py-3 rounded-lg shadow-sm w-full border border-gray-100 overflow-hidden"
@@ -146,7 +146,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             >
               {t("sidebar.new_chat")}
             </span>
-          </Link>
+          </a>
         </div>
 
         {/* 히스토리 섹션 */}
