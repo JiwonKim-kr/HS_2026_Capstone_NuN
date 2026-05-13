@@ -1,13 +1,13 @@
 "use client";
 
-import { ChevronDown, User, PieChart, Settings, LogOut } from "lucide-react";
+import { ChevronDown, User, PieChart, Settings, LogOut, Menu } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 
-export function TopNavBar() {
+export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -34,7 +34,14 @@ export function TopNavBar() {
 
   return (
     <header className="absolute backdrop-blur-[12px] bg-[#f8f9fb]/80 flex items-center justify-between left-0 px-6 py-4 top-0 w-full z-40 border-b border-transparent">
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded-md transition-colors"
+          aria-label="메뉴 열기"
+        >
+          <Menu className="w-5 h-5 text-gray-700" />
+        </button>
         <Link href="/dashboard">
           <h1 className="font-bold text-[#191c1e] text-[20px] tracking-[-1px] cursor-pointer hover:opacity-80 transition-opacity">
             Prompt-U
