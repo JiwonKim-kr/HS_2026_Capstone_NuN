@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Plus, MessageSquare, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface SessionData {
   sessionId: string;
@@ -19,6 +20,7 @@ interface SidebarProps {
 
 export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
@@ -89,11 +91,11 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
           window.location.href = '/dashboard';
         }
       } else {
-        alert('삭제에 실패했습니다.');
+        alert(t("sidebar.delete_fail"));
       }
     } catch (error) {
       console.error('Delete error:', error);
-      alert('삭제 중 오류가 발생했습니다.');
+      alert(t("sidebar.delete_error"));
     }
   };
 
@@ -115,11 +117,11 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
           transition-[width] duration-300 ease-in-out
           overflow-hidden
           ${isMobileOpen ? 'translate-x-0 w-[256px]' : '-translate-x-full md:translate-x-0'}
-          ${!isMobileOpen ? (isOpen ? 'md:w-[256px]' : 'md:w-[64px]') : ''}
+          ${!isMobileOpen ? (isOpen ? 'md:w-[256px]' : 'md:w-[68px]') : ''}
           pt-[72px] md:pt-4
         `}
       >
-        {/* 토글 버튼 영역 — 항상 아이콘만, 왼쪽 패딩 고정 */}
+        {/* 토글 버튼 영역 */}
         <div className="flex items-center h-[52px] px-4 shrink-0">
           <button
             onClick={() => setIsOpen(!isOpen)}
@@ -133,14 +135,16 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         <div className="px-3 pb-2 shrink-0">
           <Link
             href="/dashboard"
+            title={!isOpen ? t("sidebar.new_chat") : undefined}
             className="bg-white hover:bg-gray-50 transition-colors flex items-center gap-3 px-3 py-3 rounded-lg shadow-sm w-full border border-gray-100 overflow-hidden"
           >
             <Plus className="w-4 h-4 text-[#003e93] shrink-0" />
             <span
-              className={`font-medium text-[#003e93] text-sm whitespace-nowrap transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'
-                }`}
+              className={`font-medium text-[#003e93] text-sm whitespace-nowrap transition-opacity duration-200 ${
+                isOpen ? 'opacity-100' : 'opacity-0'
+              }`}
             >
-              새 채팅
+              {t("sidebar.new_chat")}
             </span>
           </Link>
         </div>
@@ -149,22 +153,23 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         <div className="flex-grow overflow-y-auto px-3">
           {/* 섹션 헤더 */}
           <div
-            className={`px-1 pt-3 pb-1 overflow-hidden transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'
-              }`}
+            className={`px-1 pt-3 pb-1 overflow-hidden transition-opacity duration-200 ${
+              isOpen ? 'opacity-100' : 'opacity-0'
+            }`}
           >
             <h3 className="text-[#757684] text-[11px] font-medium tracking-wide whitespace-nowrap">
-              최근 대화 기록
+              {t("sidebar.history")}
             </h3>
           </div>
 
           <div className="flex flex-col gap-1 mt-1">
             {isLoading ? (
               <div className={`px-1 py-2 text-sm text-gray-400 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                로딩 중...
+                {t("sidebar.loading")}
               </div>
             ) : history.length === 0 ? (
               <div className={`px-1 py-2 text-sm text-gray-400 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                기록이 없습니다.
+                {t("sidebar.empty")}
               </div>
             ) : (
               visibleHistory.map((session) => {
@@ -175,8 +180,9 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                     <Link
                       href={href}
                       title={!isOpen ? session.title : undefined}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors w-full text-left overflow-hidden ${isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
-                        }`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors w-full text-left overflow-hidden ${
+                        isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
+                      }`}
                       onClick={onMobileClose}
                     >
                       <div className="relative w-4 h-4 shrink-0 flex items-center justify-center group">
@@ -189,8 +195,9 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                         </button>
                       </div>
                       <span
-                        className={`truncate text-sm font-medium leading-normal pb-[2px] whitespace-nowrap transition-opacity duration-200 ${isActive ? 'text-[#003e93]' : 'text-[#454652]'
-                          } ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+                        className={`truncate text-sm font-medium leading-normal pb-[2px] whitespace-nowrap transition-opacity duration-200 ${
+                          isActive ? 'text-[#003e93]' : 'text-[#454652]'
+                        } ${isOpen ? 'opacity-100' : 'opacity-0'}`}
                       >
                         {session.title}
                       </span>
@@ -208,13 +215,13 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                           onClick={(e) => handleConfirmDelete(e, session.sessionId)}
                           className="text-[11px] font-medium text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
                         >
-                          삭제
+                          {t("sidebar.delete")}
                         </button>
                         <button
                           onClick={handleCancelDelete}
                           className="text-[11px] font-medium text-gray-600 hover:bg-gray-100 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
                         >
-                          취소
+                          {t("sidebar.cancel")}
                         </button>
                       </div>
                     )}
@@ -226,7 +233,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             {!isLoading && showMoreButton && (
               <button
                 onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                title={!isOpen ? (isHistoryExpanded ? "간략히 보기" : "기록 더보기") : undefined}
+                title={!isOpen ? (isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")) : undefined}
                 className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg hover:bg-gray-200 transition-colors w-full text-left overflow-hidden"
               >
                 {isHistoryExpanded ? (
@@ -235,10 +242,11 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                   <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
                 )}
                 <span
-                  className={`text-gray-500 text-sm font-medium whitespace-nowrap transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'
-                    }`}
+                  className={`text-gray-500 text-sm font-medium whitespace-nowrap transition-opacity duration-200 ${
+                    isOpen ? 'opacity-100' : 'opacity-0'
+                  }`}
                 >
-                  {isHistoryExpanded ? "간략히 보기" : "기록 더보기"}
+                  {isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")}
                 </span>
               </button>
             )}

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Globe, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
+import { Language } from "@/lib/i18n/translations";
 
 export default function SettingsPage() {
-  const [language, setLanguage] = useState("ko");
+  const { language, setLanguage, t } = useTranslation();
 
   const handleDeleteAccount = () => {
     alert("계정 영구 삭제 로직 (TODO: 연동 필요)");
@@ -16,10 +17,10 @@ export default function SettingsPage() {
       {/* Header Section */}
       <div className="flex flex-col gap-[8px] w-full">
         <h2 className="text-[#191c1e] text-[30px] tracking-[-0.75px] leading-[36px]">
-          환경 설정
+          {t("settings.title")}
         </h2>
         <p className="text-[#454652] text-[16px] leading-[24px]">
-          계정 설정 및 플랫폼 환경을 개인화할 수 있습니다.
+          {t("settings.subtitle")}
         </p>
       </div>
 
@@ -30,9 +31,9 @@ export default function SettingsPage() {
           <div className="flex items-start gap-[12px] w-full max-w-[285.8px]">
             <Globe className="w-[20px] h-[20px] text-[#454652] shrink-0 mt-[4px]" />
             <div className="flex flex-col gap-[4px] w-full">
-              <h3 className="text-[#191c1e] text-[18px] leading-[28px]">언어 설정</h3>
+              <h3 className="text-[#191c1e] text-[18px] leading-[28px]">{t("settings.language")}</h3>
               <p className="text-[#454652] text-[14px] leading-[20px]">
-                인터페이스에 표시될 기본 언어를 선택하세요.
+                {t("settings.language.desc")}
               </p>
             </div>
           </div>
@@ -40,7 +41,7 @@ export default function SettingsPage() {
           <div className="relative w-full sm:w-[240px]">
             <select
               value={language}
-              onChange={(e) => setLanguage(e.target.value)}
+              onChange={(e) => setLanguage(e.target.value as Language)}
               className="bg-[#f2f4f6] text-[#191c1e] font-medium text-[16px] h-[48px] w-full rounded-[8px] pl-[16px] pr-[40px] appearance-none outline-none focus:ring-2 focus:ring-[#003e93]/50 transition-shadow cursor-pointer"
             >
               <option value="ko">한국어 (Korean)</option>
@@ -56,7 +57,7 @@ export default function SettingsPage() {
             <div className="bg-[#dfe0ff] w-[40px] h-[40px] rounded-[8px] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-[20px] h-[20px] text-[#003e93]" />
             </div>
-            <h3 className="text-[#191c1e] text-[18px] leading-[28px]">개인정보 처리방침</h3>
+            <h3 className="text-[#191c1e] text-[18px] leading-[28px]">{language === 'ko' ? '개인정보 처리방침' : 'Privacy Policy'}</h3>
           </div>
 
           {/* 스크롤 가능한 처리방침 박스 */}
@@ -90,10 +91,21 @@ export default function SettingsPage() {
 
           <div className="flex flex-col gap-[16px] w-full">
             <div className="flex flex-col gap-[8px]">
-              <h3 className="text-[#93000a] text-[18px] leading-[28px]">계정 삭제</h3>
+              <h3 className="text-[#93000a] text-[18px] leading-[28px]">
+                {language === 'ko' ? '계정 삭제' : 'Delete Account'}
+              </h3>
               <div className="text-[#454652] text-[14px] leading-[20px]">
-                <p>계정을 삭제하면 모든 분석 데이터, 설정 및 큐레이션 기록이 영구적으로 제거됩니다.</p>
-                <p>이 작업은 되돌릴 수 없으므로 주의하시기 바랍니다.</p>
+                {language === 'ko' ? (
+                  <>
+                    <p>계정을 삭제하면 모든 분석 데이터, 설정 및 큐레이션 기록이 영구적으로 제거됩니다.</p>
+                    <p>이 작업은 되돌릴 수 없으므로 주의하시기 바랍니다.</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Deleting your account permanently removes all analytics data, settings, and curation history.</p>
+                    <p>Please note that this action cannot be undone.</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -101,7 +113,7 @@ export default function SettingsPage() {
               onClick={handleDeleteAccount}
               className="bg-[#ba1a1a] hover:bg-[#93000a] text-white text-[14px] h-[40px] px-[24px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-fit transition-colors flex items-center justify-center"
             >
-              계정 영구 삭제
+              {language === 'ko' ? '계정 영구 삭제' : 'Delete Account Permanently'}
             </button>
           </div>
         </section>

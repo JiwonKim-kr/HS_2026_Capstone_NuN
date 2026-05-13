@@ -6,12 +6,14 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -64,7 +66,7 @@ export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
           <div className="absolute right-0 top-[calc(100%+8px)] w-[224px] bg-white/90 backdrop-blur-md rounded-[12px] shadow-[0px_8px_24px_0px_rgba(25,28,30,0.08)] border border-[rgba(197,197,212,0.15)] overflow-hidden flex flex-col py-[9px]">
             {/* Account Info */}
             <div className="px-[16px] pb-[13px] pt-[12px] border-b border-[rgba(197,197,212,0.1)] flex flex-col gap-[2px]">
-              <span className="text-[#64748b] text-[12px] font-medium tracking-[0.6px] uppercase">계정</span>
+              <span className="text-[#64748b] text-[12px] font-medium tracking-[0.6px] uppercase">{t("nav.account")}</span>
               <span className="text-[#191c1e] text-[14px] font-bold tracking-[-0.35px] truncate">
                 {user?.email ?? ""}
               </span>
@@ -78,7 +80,7 @@ export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
                 className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
               >
                 <User className="w-[14px] h-[14px] text-gray-700" />
-                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">프로필</span>
+                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">{t("nav.profile")}</span>
               </Link>
               <Link 
                 href="/dashboard/analytics"
@@ -86,7 +88,7 @@ export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
                 className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
               >
                 <PieChart className="w-[14px] h-[14px] text-gray-700" />
-                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">분석</span>
+                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">{t("nav.analytics")}</span>
               </Link>
               <Link 
                 href="/dashboard/settings" 
@@ -94,7 +96,7 @@ export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
                 className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-gray-50 transition-colors text-left w-full"
               >
                 <Settings className="w-[14px] h-[14px] text-gray-700" />
-                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">환경 설정</span>
+                <span className="text-[#191c1e] text-[14px] tracking-[-0.35px]">{t("nav.settings")}</span>
               </Link>
             </div>
 
@@ -102,7 +104,7 @@ export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
             <div className="pt-[5px] pb-[4px] border-t border-[rgba(197,197,212,0.1)] mt-[2px]">
               <button onClick={handleLogout} className="flex items-center gap-[12px] px-[16px] py-[10px] hover:bg-red-50 transition-colors text-left w-full group">
                 <LogOut className="w-[14px] h-[14px] text-[#ba1a1a]" />
-                <span className="text-[#ba1a1a] text-[14px] font-medium tracking-[-0.35px]">로그아웃</span>
+                <span className="text-[#ba1a1a] text-[14px] font-medium tracking-[-0.35px]">{t("nav.logout")}</span>
               </button>
             </div>
           </div>

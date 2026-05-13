@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 type Preferences = { tone: number; level: number; density: number; creativity: number };
 const DEFAULT_PREFS: Preferences = { tone: 1.0, level: 1.0, density: 1.0, creativity: 1.0 };
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,11 +43,11 @@ export default function AnalyticsPage() {
   const pct = (key: keyof Preferences) =>
     isLoading ? 0 : Math.round((prefs[key] / 2.0) * 100);
 
-  const items: { key: keyof Preferences; label: string }[] = [
-    { key: "tone",       label: "답변 어투" },
-    { key: "level",      label: "답변 수준 (전문성 + 어휘 수준)" },
-    { key: "density",    label: "정보 밀도 및 구체성" },
-    { key: "creativity", label: "창의성 및 허용도" },
+  const items: { key: keyof Preferences; labelKey: string }[] = [
+    { key: "tone",       labelKey: "analytics.tone" },
+    { key: "level",      labelKey: "analytics.level" },
+    { key: "density",    labelKey: "analytics.density" },
+    { key: "creativity", labelKey: "analytics.creativity" },
   ];
 
   return (
@@ -53,10 +55,10 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <h1 className="text-[#191c1e] text-[36px] font-bold tracking-[-0.9px] leading-[40px]">
-          당신의 프롬프트 성향
+          {t("analytics.title")}
         </h1>
         <p className="text-[#454652] text-[18px] leading-[28px]">
-          AI가 분석한 최근 사용자 프롬프트 패턴과 선호도 가중치입니다.
+          {t("analytics.subtitle")}
         </p>
       </div>
 
@@ -65,24 +67,24 @@ export default function AnalyticsPage() {
         <div className="bg-white border border-[#c5c5d4]/10 w-full max-w-[802px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] p-[20px] md:p-[33px] flex flex-col gap-10">
           <div className="flex items-center justify-between w-full">
             <h2 className="text-[#191c1e] text-[20px] font-medium leading-[28px]">
-              사용자 가중치 시각화
+              {t("analytics.weights")}
             </h2>
             <div className="bg-[#d9e2ff] flex items-center gap-1.5 px-3 py-1 rounded-full">
               <Sparkles className="w-3.5 h-3.5 text-[#001945]" />
               <span className="text-[#001945] text-[12px] font-medium">
-                AI 최적화 완료
+                {t("analytics.optimized")}
               </span>
             </div>
           </div>
 
           <div className="flex flex-col gap-10">
-            {items.map(({ key, label }) => (
+            {items.map(({ key, labelKey }) => (
               <div key={key} className="flex flex-col gap-2">
                 <div className="flex justify-between items-end">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#2b3896]" />
                     <span className="text-[#454652] text-[14px] font-semibold tracking-[-0.35px]">
-                      {label}
+                      {t(labelKey as any)}
                     </span>
                   </div>
                   <span className="text-[#2b3896] text-[18px] font-bold leading-none">
