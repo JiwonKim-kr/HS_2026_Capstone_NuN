@@ -24,7 +24,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex flex-col gap-[32px] w-full">
-        
+
         {/* Section 1: Language Change */}
         <section className="bg-white p-[32px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[24px] w-full">
           <div className="flex items-start gap-[12px] w-full max-w-[285.8px]">
@@ -38,7 +38,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="relative w-full sm:w-[240px]">
-            <select 
+            <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="bg-[#f2f4f6] text-[#191c1e] font-medium text-[16px] h-[48px] w-full rounded-[8px] pl-[16px] pr-[40px] appearance-none outline-none focus:ring-2 focus:ring-[#003e93]/50 transition-shadow cursor-pointer"
@@ -71,7 +71,7 @@ export default function SettingsPage() {
                 <p>3. 보유 기간: 회원 탈퇴 시 혹은 법적 보관 의무 기간 종료 시까지.</p>
               </div>
               <p>상세한 내용은 '전문 보기' 링크를 통해 확인하실 수 있습니다.</p>
-              
+
               {/* 스크롤 확인용 더미 데이터 반복 */}
               <div className="h-[1px] bg-slate-300 w-full my-4" />
               <p className="text-gray-400 italic">(이하 스크롤 확인용 더미 텍스트)</p>
@@ -87,7 +87,7 @@ export default function SettingsPage() {
           <div className="bg-[#ba1a1a]/10 w-[38px] h-[35px] rounded-[8px] flex items-center justify-center shrink-0 mt-[4px]">
             <AlertTriangle className="w-[18px] h-[18px] text-[#ba1a1a]" />
           </div>
-          
+
           <div className="flex flex-col gap-[16px] w-full">
             <div className="flex flex-col gap-[8px]">
               <h3 className="text-[#93000a] text-[18px] leading-[28px]">계정 삭제</h3>
@@ -97,7 +97,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={handleDeleteAccount}
               className="bg-[#ba1a1a] hover:bg-[#93000a] text-white text-[14px] h-[40px] px-[24px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-fit transition-colors flex items-center justify-center"
             >
