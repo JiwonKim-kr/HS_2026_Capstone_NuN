@@ -157,10 +157,11 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                   <div key={session.sessionId} className="relative w-full">
                     <Link
                       href={href}
-                      title={!isOpen ? session.title : undefined}
-                      className={`flex ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg transition-colors w-full text-left ${
+                      title={!showLabels ? session.title : undefined}
+                      className={`flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg transition-colors w-full text-left ${
                         isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
                       }`}
+                      onClick={onMobileClose}
                     >
                       <div className="relative w-4 h-4 shrink-0 flex items-center justify-center group">
                         <MessageSquare className={`w-4 h-4 absolute transition-opacity duration-200 ${isActive ? 'text-[#003e93]' : 'text-gray-400'} group-hover:opacity-0 ${deleteConfirmId === session.sessionId ? 'opacity-0' : ''}`} />
@@ -171,7 +172,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                      {isOpen && <span className={`truncate text-sm font-medium leading-normal pb-[2px] ${isActive ? 'text-[#003e93]' : 'text-[#454652]'}`}>{session.title}</span>}
+                      {showLabels && <span className={`truncate text-sm font-medium leading-normal pb-[2px] ${isActive ? 'text-[#003e93]' : 'text-[#454652]'}`}>{session.title}</span>}
                     </Link>
 
                     {deleteConfirmId === session.sessionId && deletePopoverPos && (
@@ -197,18 +198,6 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                       </div>
                     )}
                   </div>
-                  <Link
-                    key={session.sessionId}
-                    href={href}
-                    title={!showLabels ? session.title : undefined}
-                    className={`flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg transition-colors w-full text-left ${
-                      isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
-                    }`}
-                    onClick={onMobileClose}
-                  >
-                    <MessageSquare className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#003e93]' : 'text-gray-400'}`} />
-                    {showLabels && <span className={`truncate text-sm font-medium leading-normal pb-[2px] ${isActive ? 'text-[#003e93]' : 'text-[#454652]'}`}>{session.title}</span>}
-                  </Link>
                 );
               })
             )}
