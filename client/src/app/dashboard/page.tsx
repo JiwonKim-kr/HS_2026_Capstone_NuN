@@ -6,9 +6,11 @@ import { DraftEditor } from "@/components/prompt/DraftEditor";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { PromptCandidateType } from "@/schemas/promptSchema";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export default function Home() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [view, setView] = useState<'draft' | 'analysis'>('draft');
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
@@ -53,10 +55,10 @@ export default function Home() {
           {/* Header Text */}
           <div className="w-full max-w-[830px] mb-12">
             <h2 className="text-[24px] md:text-[36px] font-bold text-[#191c1e] tracking-[-0.9px] leading-[40px] mb-3">
-              당신의 아이디어를 구체화하세요.
+              {t("dashboard.title")}
             </h2>
             <p className="text-[#454652] text-[18px] leading-[28px]">
-              생각나는 대로 입력해 보세요. AI가 당신의 프로필을 기반으로 다듬어 드립니다.
+              {t("dashboard.subtitle")}
             </p>
           </div>
 

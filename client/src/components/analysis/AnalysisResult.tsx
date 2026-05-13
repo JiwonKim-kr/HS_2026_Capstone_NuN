@@ -3,14 +3,16 @@
 import { useState, useEffect } from "react";
 import { Sparkles, Edit2, Copy, Check, ThumbsUp, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 import { PromptCandidateType } from "@/schemas/promptSchema";
+import { useTranslation } from "@/lib/i18n/useTranslation";
+import { TranslationKey } from "@/lib/i18n/translations";
 
-const LOADING_MESSAGES = [
-  '프롬프트를 다듬는 중...',
-  '글자를 깎는 중...',
-  '취향을 반영하는 중...',
-  '특징을 추출하는 중...',
-  '문장을 조율하는 중...',
-  '최적의 구조를 찾는 중...',
+const LOADING_MESSAGE_KEYS: TranslationKey[] = [
+  "analysis.loading.1",
+  "analysis.loading.2",
+  "analysis.loading.3",
+  "analysis.loading.4",
+  "analysis.loading.5",
+  "analysis.loading.6",
 ];
 
 interface AnalysisResultProps {
@@ -23,10 +25,11 @@ interface AnalysisResultProps {
 }
 
 export function AnalysisResult({ userId, originalPrompt, candidates, loading, error, onRestart }: AnalysisResultProps) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedStatus, setLikedStatus] = useState<Record<string, boolean>>({});
-  const [msgIndex, setMsgIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
+  const [msgIndex, setMsgIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGE_KEYS.length));
   const [msgVisible, setMsgVisible] = useState(true);
 
   useEffect(() => {
@@ -35,8 +38,8 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
       setMsgVisible(false);
       setTimeout(() => {
         setMsgIndex(prev => {
-          let next = Math.floor(Math.random() * LOADING_MESSAGES.length);
-          if (next === prev) next = (prev + 1) % LOADING_MESSAGES.length;
+          let next = Math.floor(Math.random() * LOADING_MESSAGE_KEYS.length);
+          if (next === prev) next = (prev + 1) % LOADING_MESSAGE_KEYS.length;
           return next;
         });
         setMsgVisible(true);
@@ -57,14 +60,13 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
 
   const handleToggleLike = async (candidate: PromptCandidateType) => {
     if (!candidate.logId) {
-      alert("데이터를 서버와 동기화 중입니다. 잠시 후 다시 시도해 주세요.");
+      alert(t("analysis.sync_wait"));
       return;
     }
 
     const currentStatus = likedStatus[candidate.candidateId] || false;
     const targetStatus = !currentStatus;
 
-    // Optimistic UI update
     setLikedStatus(prev => ({ ...prev, [candidate.candidateId]: targetStatus }));
 
     try {
@@ -81,13 +83,12 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
 
       const json = await res.json();
       if (!res.ok || !json.success) {
-        throw new Error(json.error || '피드백 처리 실패');
+        throw new Error(json.error || t("analysis.feedback_fail"));
       }
     } catch (err) {
       console.error("Feedback error:", err);
-      // Revert UI on failure
       setLikedStatus(prev => ({ ...prev, [candidate.candidateId]: currentStatus }));
-      alert("피드백 반영에 실패했습니다.");
+      alert(t("analysis.feedback_fail"));
     }
   };
 
@@ -99,13 +100,13 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
         <div className="max-w-[650px]">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#d9e2ff] rounded-full mb-6 relative">
             <Sparkles className="w-[13px] h-[13px] text-[#001945]" />
-            <span className="text-[#001945] text-xs font-medium">분석 완료됨</span>
+            <span className="text-[#001945] text-xs font-medium">{t("analysis.badge")}</span>
           </div>
           <h1 className="text-[48px] font-bold text-[#191c1e] tracking-[-1.2px] leading-[48px] mb-4">
-            최적화된 프롬프트 결과
+            {t("analysis.title")}
           </h1>
           <p className="text-[#454652] text-[18px]">
-            의도를 분석하여 AI 모델 상호작용을 위한 세 가지 최적화된 후보군을 생성했습니다.
+            {t("analysis.subtitle")}
           </p>
         </div>
         <button
@@ -113,7 +114,7 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
           className="flex items-center gap-2 px-5 py-3 rounded-full bg-white border border-gray-200 text-[#454652] hover:bg-gray-50 transition-colors shadow-sm"
         >
           <RotateCcw className="w-4 h-4" />
-          <span className="font-medium">다시 만들기</span>
+          <span className="font-medium">{t("analysis.restart")}</span>
         </button>
       </div>
 
@@ -123,10 +124,10 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
           <div className="flex-1 border-l-4 border-[#2b3896] bg-white rounded-xl shadow-sm p-8">
             <div className="flex items-center gap-3 mb-4">
               <Edit2 className="w-4 h-4 text-gray-500" />
-              <h2 className="text-[#757684] text-sm tracking-[1.4px] font-medium uppercase font-['Actor']">사용자 입력</h2>
+              <h2 className="text-[#757684] text-sm tracking-[1.4px] font-medium uppercase font-['Actor']">{t("analysis.user_input")}</h2>
             </div>
             <p className="text-[#191c1e] text-[20px] leading-[32.5px] italic font-medium">
-              "{originalPrompt || "초안 텍스트가 전달되지 않았습니다."}"
+              &ldquo;{originalPrompt || t("analysis.no_draft")}&rdquo;
             </p>
           </div>
         </div>
@@ -134,7 +135,7 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
 
       {/* Prompt Candidates Header */}
       <div className="w-full flex items-center mb-6">
-        <h2 className="text-[24px] text-[#191c1e] mr-4 whitespace-nowrap">프롬프트 후보군</h2>
+        <h2 className="text-[24px] text-[#191c1e] mr-4 whitespace-nowrap">{t("analysis.candidates")}</h2>
         <div className="flex-1 h-px bg-[#e0e3e5]" />
       </div>
 
@@ -146,7 +147,7 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
             style={{ opacity: msgVisible ? 1 : 0, transition: 'opacity 400ms ease-in-out' }}
             className="text-[14px] text-gray-400"
           >
-            {LOADING_MESSAGES[msgIndex]}
+            {t(LOADING_MESSAGE_KEYS[msgIndex])}
           </p>
         </div>
       ) : error ? (
@@ -197,7 +198,7 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
                     <div className="flex justify-between items-center mb-6">
                       <div>
                         <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896] transition-colors">
-                          버전 {String(idx + 1).padStart(2, '0')}
+                          {t("analysis.version")} {String(idx + 1).padStart(2, '0')}
                         </span>
                         {candidate.metadata.tierDescription && (
                           <p className="text-xs text-[#757684] mt-1">
@@ -215,35 +216,35 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
 
                     {/* Inline Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t border-gray-100 mt-auto">
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleCopy(candidate); }}
                         className={`flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 ${
-                          isCopied 
-                            ? 'bg-green-50 text-green-600 border border-green-200' 
+                          isCopied
+                            ? 'bg-green-50 text-green-600 border border-green-200'
                             : 'bg-[#f8f9fb] text-[#454652] hover:bg-[#e9ecef] border border-transparent'
                         }`}
                       >
                         {isCopied ? (
                           <>
                             <Check className="w-5 h-5 text-green-500" />
-                            복사완료!
+                            {t("analysis.copied")}
                           </>
                         ) : (
                           <>
                             <Copy className="w-5 h-5" />
-                            이 프롬프트 복사하기
+                            {t("analysis.copy")}
                           </>
                         )}
                       </button>
 
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleToggleLike(candidate); }}
                         className={`py-3 px-6 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 border ${
                           isLiked
                             ? 'bg-green-50 text-green-700 border-green-300 shadow-sm'
                             : 'bg-white text-[#757684] border-gray-200 hover:bg-gray-50'
                         }`}
-                        title={isLiked ? "추천 취소" : "이 프롬프트 추천하기"}
+                        title={isLiked ? t("analysis.unlike_title") : t("analysis.like_title")}
                       >
                         <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-green-600 text-green-600' : ''}`} />
                       </button>

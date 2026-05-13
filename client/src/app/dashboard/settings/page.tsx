@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Globe, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
+import { Language } from "@/lib/i18n/translations";
 
 export default function SettingsPage() {
-  const [language, setLanguage] = useState("ko");
+  const { language, setLanguage, t } = useTranslation();
 
   const handleDeleteAccount = () => {
     alert("계정 영구 삭제 로직 (TODO: 연동 필요)");
@@ -16,10 +17,10 @@ export default function SettingsPage() {
       {/* Header Section */}
       <div className="flex flex-col gap-[8px] w-full">
         <h2 className="text-[#191c1e] text-[30px] tracking-[-0.75px] leading-[36px]">
-          환경 설정
+          {t("settings.title")}
         </h2>
         <p className="text-[#454652] text-[16px] leading-[24px]">
-          계정 설정 및 플랫폼 환경을 개인화할 수 있습니다.
+          {t("settings.subtitle")}
         </p>
       </div>
 
@@ -30,9 +31,9 @@ export default function SettingsPage() {
           <div className="flex items-start gap-[12px] w-full max-w-[285.8px]">
             <Globe className="w-[20px] h-[20px] text-[#454652] shrink-0 mt-[4px]" />
             <div className="flex flex-col gap-[4px] w-full">
-              <h3 className="text-[#191c1e] text-[18px] leading-[28px]">언어 설정</h3>
+              <h3 className="text-[#191c1e] text-[18px] leading-[28px]">{t("settings.language")}</h3>
               <p className="text-[#454652] text-[14px] leading-[20px]">
-                인터페이스에 표시될 기본 언어를 선택하세요.
+                {t("settings.language.desc")}
               </p>
             </div>
           </div>
@@ -40,7 +41,7 @@ export default function SettingsPage() {
           <div className="relative w-full sm:w-[240px]">
             <select 
               value={language}
-              onChange={(e) => setLanguage(e.target.value)}
+              onChange={(e) => setLanguage(e.target.value as Language)}
               className="bg-[#f2f4f6] text-[#191c1e] font-medium text-[16px] h-[48px] w-full rounded-[8px] pl-[16px] pr-[40px] appearance-none outline-none focus:ring-2 focus:ring-[#003e93]/50 transition-shadow cursor-pointer"
             >
               <option value="ko">한국어 (Korean)</option>
@@ -56,28 +57,47 @@ export default function SettingsPage() {
             <div className="bg-[#dfe0ff] w-[40px] h-[40px] rounded-[8px] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-[20px] h-[20px] text-[#003e93]" />
             </div>
-            <h3 className="text-[#191c1e] text-[18px] leading-[28px]">개인정보 처리방침</h3>
+            <h3 className="text-[#191c1e] text-[18px] leading-[28px]">{language === 'ko' ? '개인정보 처리방침' : 'Privacy Policy'}</h3>
           </div>
 
           {/* 스크롤 가능한 처리방침 박스 */}
           <div className="bg-[#f2f4f6] h-[160px] rounded-[8px] p-[24px] overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:bg-[#d1d5db] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
             <div className="flex flex-col gap-[22px] text-[#454652] text-[14px] leading-[22.75px]">
-              <p>
-                Intelligence Layer는 사용자의 개인정보 보호를 최우선으로 생각합니다. 당사는 서비스 제공을 위해 필요한 최소한의 데이터만을 수집하며, 모든 데이터는 최신 암호화 표준을 통해 안전하게 관리됩니다.
-              </p>
-              <div>
-                <p>1. 수집하는 개인정보 항목: 이메일, 회사 정보, 서비스 이용 기록.</p>
-                <p>2. 수집 목적: 맞춤형 AI 큐레이션 서비스 제공 및 사용자 인증.</p>
-                <p>3. 보유 기간: 회원 탈퇴 시 혹은 법적 보관 의무 기간 종료 시까지.</p>
-              </div>
-              <p>상세한 내용은 '전문 보기' 링크를 통해 확인하실 수 있습니다.</p>
-              
-              {/* 스크롤 확인용 더미 데이터 반복 */}
-              <div className="h-[1px] bg-slate-300 w-full my-4" />
-              <p className="text-gray-400 italic">(이하 스크롤 확인용 더미 텍스트)</p>
-              <p>
-                당사는 개인정보보호법 및 관련 법령을 철저히 준수합니다. 본 방침은 추가적인 서비스를 적용할 때 언제든 수정될 수 있으며, 수정 시에는 공지사항을 통해 사전 안내해 드립니다. 사용자의 권익 보호를 위해 투명하고 공정한 데이터 활용 원칙을 마련하고 있습니다.
-              </p>
+              {language === 'ko' ? (
+                <>
+                  <p>
+                    Prompt-U는 사용자의 개인정보 보호를 최우선으로 생각합니다. 당사는 서비스 제공을 위해 필요한 최소한의 데이터만을 수집하며, 모든 데이터는 최신 암호화 표준을 통해 안전하게 관리됩니다.
+                  </p>
+                  <div>
+                    <p>1. 수집하는 개인정보 항목: 이메일, 회사 정보, 서비스 이용 기록.</p>
+                    <p>2. 수집 목적: 맞춤형 AI 큐레이션 서비스 제공 및 사용자 인증.</p>
+                    <p>3. 보유 기간: 회원 탈퇴 시 혹은 법적 보관 의무 기간 종료 시까지.</p>
+                  </div>
+                  <p>상세한 내용은 '전문 보기' 링크를 통해 확인하실 수 있습니다.</p>
+                  <div className="h-[1px] bg-slate-300 w-full my-4" />
+                  <p className="text-gray-400 italic">(이하 스크롤 확인용 더미 텍스트)</p>
+                  <p>
+                    당사는 개인정보보호법 및 관련 법령을 철저히 준수합니다. 본 방침은 추가적인 서비스를 적용할 때 언제든 수정될 수 있으며, 수정 시에는 공지사항을 통해 사전 안내해 드립니다. 사용자의 권익 보호를 위해 투명하고 공정한 데이터 활용 원칙을 마련하고 있습니다.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    Prompt-U considers the protection of users' personal information a top priority. We collect only the minimum data necessary to provide our services, and all data is securely managed through the latest encryption standards.
+                  </p>
+                  <div>
+                    <p>1. Items of personal information collected: Email, company information, service usage records.</p>
+                    <p>2. Purpose of collection: Provision of customized AI curation services and user authentication.</p>
+                    <p>3. Retention period: Until account withdrawal or the end of the legal retention period.</p>
+                  </div>
+                  <p>Detailed information can be found through the 'View Full Text' link.</p>
+                  <div className="h-[1px] bg-slate-300 w-full my-4" />
+                  <p className="text-gray-400 italic">(Dummy text for scrolling)</p>
+                  <p>
+                    We strictly comply with the Personal Information Protection Act and related laws. This policy is subject to change at any time when additional services are applied, and we will notify you in advance through announcements when modifying it. We have established transparent and fair data utilization principles to protect the rights and interests of users.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -90,10 +110,21 @@ export default function SettingsPage() {
           
           <div className="flex flex-col gap-[16px] w-full">
             <div className="flex flex-col gap-[8px]">
-              <h3 className="text-[#93000a] text-[18px] leading-[28px]">계정 삭제</h3>
+              <h3 className="text-[#93000a] text-[18px] leading-[28px]">
+                {language === 'ko' ? '계정 삭제' : 'Delete Account'}
+              </h3>
               <div className="text-[#454652] text-[14px] leading-[20px]">
-                <p>계정을 삭제하면 모든 분석 데이터, 설정 및 큐레이션 기록이 영구적으로 제거됩니다.</p>
-                <p>이 작업은 되돌릴 수 없으므로 주의하시기 바랍니다.</p>
+                {language === 'ko' ? (
+                  <>
+                    <p>계정을 삭제하면 모든 분석 데이터, 설정 및 큐레이션 기록이 영구적으로 제거됩니다.</p>
+                    <p>이 작업은 되돌릴 수 없으므로 주의하시기 바랍니다.</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Deleting your account permanently removes all analytics data, settings, and curation history.</p>
+                    <p>Please note that this action cannot be undone.</p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -101,7 +132,7 @@ export default function SettingsPage() {
               onClick={handleDeleteAccount}
               className="bg-[#ba1a1a] hover:bg-[#93000a] text-white text-[14px] h-[40px] px-[24px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-fit transition-colors flex items-center justify-center"
             >
-              계정 영구 삭제
+              {language === 'ko' ? '계정 영구 삭제' : 'Delete Account Permanently'}
             </button>
           </div>
         </section>

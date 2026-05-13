@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { SendHorizonal } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface DraftEditorProps {
   onSubmit?: (text: string) => void;
 }
 
 export function DraftEditor({ onSubmit }: DraftEditorProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
 
   const handleSubmit = () => {
@@ -27,7 +29,7 @@ export function DraftEditor({ onSubmit }: DraftEditorProps) {
           {/* Label */}
           <div className="pt-6 px-6">
             <h2 className="font-semibold text-[#2b3896] text-[11px] tracking-[1.1px] uppercase">
-              Draft Prompt
+              {t("dashboard.draft.label")}
             </h2>
           </div>
           
@@ -37,7 +39,7 @@ export function DraftEditor({ onSubmit }: DraftEditorProps) {
               value={text}
               onChange={(e) => setText(e.target.value)}
               className="w-full h-full resize-none bg-transparent text-[#191c1e] text-[20px] leading-[28px] placeholder:text-[#c5c5d4] outline-none"
-              placeholder="여기에 거친 초안이나 아이디어를 입력하세요..."
+              placeholder={t("dashboard.draft.placeholder") as string}
             />
           </div>
 
