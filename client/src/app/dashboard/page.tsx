@@ -4,11 +4,9 @@ import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DraftEditor } from "@/components/prompt/DraftEditor";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
-import { useAuth } from "@/lib/auth/AuthProvider";
 import { PromptCandidateType } from "@/schemas/promptSchema";
 
 export default function Home() {
-  const { user } = useAuth();
   const [view, setView] = useState<'draft' | 'analysis'>('draft');
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
@@ -26,7 +24,7 @@ export default function Home() {
       const res = await fetch('/api/prompts/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user!.id, originalInput: text }),
+        body: JSON.stringify({ originalInput: text }),
       });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || '생성 실패');
@@ -67,7 +65,6 @@ export default function Home() {
         </div>
       ) : (
         <AnalysisResult
-          userId={user?.id ?? ""}
           originalPrompt={submittedPrompt}
           candidates={candidates}
           loading={analysisLoading}

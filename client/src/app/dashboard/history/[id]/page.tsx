@@ -92,7 +92,6 @@ export default function HistoryDetailPage({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           historyId: candidate.logId,
-          userId: user.id,
           appliedTiers,
           targetLikeStatus
         })
