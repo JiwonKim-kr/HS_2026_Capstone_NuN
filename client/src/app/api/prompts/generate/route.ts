@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generatePromptCandidates } from '@/lib/services/aiService';
 import { generatePromptRequestSchema } from '@/lib/schemas/promptSchema';
 import { getAuthenticatedUser } from '@/lib/supabase/server';
+import { checkAndIncrementUsage } from '@/lib/services/usageService';
 import { z } from 'zod';
 
 const generateRequestBodySchema = generatePromptRequestSchema.omit({ userId: true });
@@ -9,6 +10,14 @@ const generateRequestBodySchema = generatePromptRequestSchema.omit({ userId: tru
 export async function POST(req: NextRequest) {
   const { user, error } = await getAuthenticatedUser();
   if (error) return error;
+
+  const { allowed, remaining } = await checkAndIncrementUsage(user.id);
+  if (!allowed) {
+    return NextResponse.json(
+      { success: false, error: '일일 사용 한도에 도달했습니다.' },
+      { status: 429 }
+    );
+  }
 
   try {
     const body = await req.json();

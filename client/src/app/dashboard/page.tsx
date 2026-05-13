@@ -28,6 +28,10 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ originalInput: text }),
       });
+      if (res.status === 429) {
+        setAnalysisError(t("dashboard.limit_exceeded"));
+        return;
+      }
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || '생성 실패');
       setCandidates(json.data.candidates);

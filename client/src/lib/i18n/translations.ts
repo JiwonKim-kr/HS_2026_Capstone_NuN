@@ -63,6 +63,7 @@ export const translations = {
     "dashboard.subtitle": "생각나는 대로 입력해 보세요. AI가 당신의 프로필을 기반으로 다듬어 드립니다.",
     "dashboard.draft.label": "Draft Prompt",
     "dashboard.draft.placeholder": "여기에 거친 초안이나 아이디어를 입력하세요...",
+    "dashboard.limit_exceeded": "오늘의 프롬프트 생성 한도(5회)에 도달했습니다. 내일 다시 이용해 주세요.",
 
     // Analysis Result
     "analysis.badge": "분석 완료됨",
@@ -250,6 +251,7 @@ export const translations = {
     "dashboard.subtitle": "Type whatever comes to mind. AI will refine it based on your profile.",
     "dashboard.draft.label": "Draft Prompt",
     "dashboard.draft.placeholder": "Enter your rough draft or ideas here...",
+    "dashboard.limit_exceeded": "You've reached today's prompt generation limit (5 times). Please come back tomorrow.",
 
     // Analysis Result
     "analysis.badge": "Analysis Complete",
