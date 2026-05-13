@@ -25,6 +25,8 @@ const notoSansKR = Noto_Sans_KR({
   weight: ["400", "500", "700"],
 });
 
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+
 export const metadata: Metadata = {
   title: "Prompt-U",
   description: "나만의 AI 선호 모델을 만들어보세요.",
@@ -41,7 +43,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${manrope.variable} ${notoSansKR.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AuthProvider>{children}</AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

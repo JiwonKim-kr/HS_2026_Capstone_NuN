@@ -3,6 +3,7 @@
 import { use, useState, useEffect } from "react";
 import { Edit2, ChevronLeft, ChevronRight, ThumbsUp, Check, Copy } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 type Candidate = {
   candidateId: string;
@@ -26,6 +27,7 @@ export default function HistoryDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { id } = use(params);
   
   const [data, setData] = useState<HistoryData | null>(null);
@@ -114,7 +116,7 @@ export default function HistoryDetailPage({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full gap-4">
-        <p className="text-[#757684] text-[18px]">기록을 불러오는 중...</p>
+        <p className="text-[#757684] text-[18px]">{t("history.loading")}</p>
       </div>
     );
   }
@@ -122,7 +124,7 @@ export default function HistoryDetailPage({
   if (!data || !data.candidates || data.candidates.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center w-full h-full gap-4">
-        <p className="text-[#757684] text-[18px]">대화 기록을 찾을 수 없습니다.</p>
+        <p className="text-[#757684] text-[18px]">{t("history.not_found")}</p>
       </div>
     );
   }
@@ -135,14 +137,14 @@ export default function HistoryDetailPage({
       {/* ── 페이지 헤더 ── */}
       <div className="w-full mb-12">
         <div className="inline-flex items-center px-3 py-1 bg-[#d9e2ff] rounded-full mb-4">
-          <span className="text-[#001945] text-xs font-medium">대화 기록 · {date}</span>
+          <span className="text-[#001945] text-xs font-medium">{t("history.badge")} · {date}</span>
         </div>
 
         <h1 className="text-[26px] md:text-[40px] font-bold text-[#191c1e] tracking-[-1px] leading-[1.2] mb-3">
           {title.length > 50 ? title.substring(0, 50) + '...' : title}
         </h1>
         <p className="text-[#454652] text-[14px] md:text-[16px]">
-          입력한 프롬프트와 AI가 생성한 후보군을 확인할 수 있습니다.
+          {t("history.page_subtitle")}
         </p>
       </div>
 
@@ -152,7 +154,7 @@ export default function HistoryDetailPage({
           <div className="flex items-center gap-3 mb-4">
             <Edit2 className="w-4 h-4 text-gray-500" />
             <span className="text-[#757684] text-sm tracking-[1.4px] font-medium uppercase">
-              사용자 입력
+              {t("history.user_input")}
             </span>
           </div>
           <p className="text-[#191c1e] text-[15px] md:text-[20px] leading-[26px] md:leading-[32.5px] italic font-medium">
@@ -164,7 +166,7 @@ export default function HistoryDetailPage({
       {/* ── 후보군 헤더 ── */}
       <div className="w-full flex items-center mb-6">
         <h2 className="text-[18px] md:text-[24px] text-[#191c1e] mr-4 whitespace-nowrap">
-          프롬프트 후보군
+          {t("history.candidates")}
         </h2>
         <div className="flex-1 h-px bg-[#e0e3e5]" />
       </div>
@@ -212,7 +214,7 @@ export default function HistoryDetailPage({
                 <div className="flex justify-between items-center mb-6">
                   <div>
                     <span className="text-sm font-semibold tracking-[1.4px] uppercase text-[#2b3896]">
-                      버전 {candidate.candidateId}
+                      {t("history.version")} {candidate.candidateId}
                     </span>
                     {candidate.metadata?.tierDescription && (
                       <p className="text-xs text-[#757684] mt-1">
@@ -241,12 +243,12 @@ export default function HistoryDetailPage({
                     {isCopied ? (
                       <>
                         <Check className="w-5 h-5 text-green-500" />
-                        <span className="text-xs md:text-sm">복사완료!</span>
+                        <span className="text-xs md:text-sm">{t("history.copied")}</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-5 h-5" />
-                        <span className="text-xs md:text-sm">이 프롬프트 복사하기</span>
+                        <span className="text-xs md:text-sm">{t("history.copy")}</span>
                       </>
                     )}
                   </button>
@@ -258,7 +260,7 @@ export default function HistoryDetailPage({
                         ? 'bg-green-50 text-green-700 border-green-300 shadow-sm'
                         : 'bg-white text-[#757684] border-gray-200 hover:bg-gray-50'
                     }`}
-                    title={isLiked ? "추천 취소" : "이 프롬프트 추천하기"}
+                    title={isLiked ? t("history.unlike_title") : t("history.like_title")}
                   >
                     <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-green-600 text-green-600' : ''}`} />
                   </button>

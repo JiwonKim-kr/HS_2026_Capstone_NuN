@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export function LandingHero() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -36,22 +38,22 @@ export function LandingHero() {
           <div className="w-full">
             <h1 className="flex flex-col tracking-[-1.8px] font-normal m-0">
               <div className="leading-[1] mb-1">
-                <span className="text-[#2b3896] text-[48px] md:text-[80px] lg:text-[96px]">Prompt</span>
+                <span className="text-[#2b3896] text-[48px] md:text-[80px] lg:text-[96px]">{t("landing.title1")}</span>
                 <span className="text-[48px] md:text-[80px] lg:text-[96px]">{` `}</span>
-                <span className="text-[#003e93] text-[48px] md:text-[80px] lg:text-[96px]">- U</span>
+                <span className="text-[#003e93] text-[48px] md:text-[80px] lg:text-[96px]">{t("landing.title2")}</span>
                 <span className="text-[#2b3896] text-[36px] md:text-[60px] lg:text-[72px]">,</span>
               </div>
               <div className="leading-[1.1]">
-                <span className="text-[#191c1e] text-[32px] md:text-[56px] lg:text-[72px]">AI를 다루는</span>
+                <span className="text-[#191c1e] text-[32px] md:text-[56px] lg:text-[72px]">{t("landing.subtitle1")}</span>
               </div>
               <div className="leading-[1.1]">
-                <span className="text-[#191c1e] text-[32px] md:text-[56px] lg:text-[72px]">당신만의 방식.</span>
+                <span className="text-[#191c1e] text-[32px] md:text-[56px] lg:text-[72px]">{t("landing.subtitle2")}</span>
               </div>
             </h1>
           </div>
           <div className="max-w-[512px] w-full">
             <p className="text-[#454652] text-[18px] leading-[29.25px]">
-              업무 흐름에 맞춰 스스로 발전하는 AI를 경험해 보세요. Prompt-U는 사용자가 가진 특유의 대화 방식과 질문 패턴을 깊이 학습하여 언제나 필요한 결과물을 제공합니다.
+              {t("landing.desc")}
             </p>
           </div>
         </div>
@@ -67,10 +69,10 @@ export function LandingHero() {
           <div className="bg-white flex flex-col items-start p-[40px] gap-[32px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-full relative">
             <div className="flex flex-col gap-[4px] w-full">
               <h2 className="text-[#191c1e] text-[24px] leading-[32px]">
-                다시 오신 것을 환영합니다
+                {t("landing.welcome")}
               </h2>
               <p className="text-[#454652] text-[14px] leading-[20px]">
-                Prompt-U 와 함께 여정을 계속하세요.
+                {t("landing.continue")}
               </p>
               {error && (
                 <div className="mt-[8px] w-full rounded-[8px] bg-[#fff1f1] border border-[#ffb3b3] px-4 py-3 text-[14px] text-[#ba1a1a] leading-[20px]">
@@ -82,7 +84,7 @@ export function LandingHero() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-[24px] w-full">
               <div className="relative h-[76px] w-full">
                 <label className="absolute left-[4px] top-[9.5px] -translate-y-1/2 text-[#454652] text-[14px] leading-[20px]">
-                  이메일 주소
+                  {t("landing.email")}
                 </label>
                 <div className="absolute top-[28px] bg-[#e0e3e5] px-[16px] py-[14px] rounded-[8px] w-full border-2 border-transparent focus-within:border-[#003e93] transition-colors">
                   <input
@@ -99,7 +101,7 @@ export function LandingHero() {
 
               <div className="relative h-[76px] w-full">
                 <label className="absolute left-[4px] top-[9.5px] -translate-y-1/2 text-[#454652] text-[14px] leading-[20px]">
-                  비밀번호
+                  {t("landing.password")}
                 </label>
                 <div className="absolute top-[28px] bg-[#e0e3e5] px-[16px] py-[14px] rounded-[8px] w-full border-2 border-transparent focus-within:border-[#003e93] transition-colors">
                   <input
@@ -119,20 +121,20 @@ export function LandingHero() {
                 disabled={loading}
                 className="bg-[#003e93] text-white text-[16px] font-bold leading-[24px] py-[16px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] hover:bg-[#003682] disabled:opacity-60 disabled:cursor-not-allowed transition-colors font-['Manrope'] w-full"
               >
-                {loading ? "로그인 중..." : "로그인"}
+                {loading ? t("landing.login_loading") : t("landing.login_btn")}
               </button>
             </form>
 
             <div className="border-t border-[#eceef0] pt-[33px] flex flex-col gap-[16px] w-full">
               <button type="button" className="bg-[#f2f4f6] flex items-center justify-center py-[12px] gap-[12px] rounded-[8px] hover:bg-[#e9ecef] transition-colors w-full">
                 <span className="font-['Actor'] text-[24px] text-[#191c1e] leading-[24px]">google</span>
-                <span className="font-medium text-[16px] text-[#191c1e] leading-[24px]">Google로 계속하기</span>
+                <span className="font-medium text-[16px] text-[#191c1e] leading-[24px]">{t("landing.google_login")}</span>
               </button>
 
               <div className="flex justify-center w-full">
                 <p className="text-[#454652] text-[14px] leading-[20px] text-center">
-                  계정이 없으신가요?{' '}
-                  <a href="/signup" className="text-[#2b3896] hover:underline">무료로 시작하기</a>
+                  {t("landing.no_account")}{' '}
+                  <a href="/signup" className="text-[#2b3896] hover:underline">{t("landing.signup_free")}</a>
                 </p>
               </div>
             </div>

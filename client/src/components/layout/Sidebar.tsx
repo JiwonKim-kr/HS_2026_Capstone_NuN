@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Plus, MessageSquare, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface SessionData {
   sessionId: string;
@@ -19,6 +20,7 @@ interface SidebarProps {
 
 export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const pathname = usePathname();
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
@@ -90,11 +92,11 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
           window.location.href = '/dashboard';
         }
       } else {
-        alert('삭제에 실패했습니다.');
+        alert(t("sidebar.delete_fail"));
       }
     } catch (error) {
       console.error('Delete error:', error);
-      alert('삭제 중 오류가 발생했습니다.');
+      alert(t("sidebar.delete_error"));
     }
   };
 
@@ -128,11 +130,11 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
       <div className="pt-2 w-full flex justify-center">
         <Link
           href="/dashboard"
-          title={!showLabels ? "새 채팅" : undefined}
+          title={!showLabels ? t("sidebar.new_chat") : undefined}
           className={`bg-white hover:bg-gray-50 transition-colors flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-3 rounded-lg shadow-sm w-full border border-gray-100`}
         >
           <Plus className="w-4 h-4 text-[#003e93] shrink-0" />
-          {showLabels && <span className="font-medium text-[#003e93] text-sm whitespace-nowrap">새 채팅</span>}
+          {showLabels && <span className="font-medium text-[#003e93] text-sm whitespace-nowrap">{t("sidebar.new_chat")}</span>}
         </Link>
       </div>
 
@@ -140,15 +142,15 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         <div className="flex flex-col py-2 w-full items-center">
           {showLabels && (
             <div className="px-4 py-2 w-full text-left">
-              <h3 className="text-[#757684] text-[11px] font-medium tracking-wide whitespace-nowrap">최근 대화 기록</h3>
+              <h3 className="text-[#757684] text-[11px] font-medium tracking-wide whitespace-nowrap">{t("sidebar.history")}</h3>
             </div>
           )}
 
           <div className="flex flex-col gap-1 w-full max-h-[512px] overflow-y-auto mt-2 overflow-x-hidden">
             {isLoading ? (
-              showLabels && <div className="px-4 py-2 text-sm text-gray-400">로딩 중...</div>
+              showLabels && <div className="px-4 py-2 text-sm text-gray-400">{t("sidebar.loading")}</div>
             ) : history.length === 0 ? (
-              showLabels && <div className="px-4 py-2 text-sm text-gray-400">기록이 없습니다.</div>
+              showLabels && <div className="px-4 py-2 text-sm text-gray-400">{t("sidebar.empty")}</div>
             ) : (
               visibleHistory.map((session) => {
                 const href = `/dashboard/history/${session.sessionId}`;
@@ -187,13 +189,13 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                           onClick={(e) => handleConfirmDelete(e, session.sessionId)}
                           className="text-[11px] font-medium text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
                         >
-                          삭제
+                          {t("sidebar.delete")}
                         </button>
                         <button 
                           onClick={handleCancelDelete}
                           className="text-[11px] font-medium text-gray-600 hover:bg-gray-100 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
                         >
-                          취소
+                          {t("sidebar.cancel")}
                         </button>
                       </div>
                     )}
@@ -205,7 +207,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             {!isLoading && showMoreButton && (
               <button
                 onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                title={!showLabels ? (isHistoryExpanded ? "간략히 보기" : "기록 더보기") : undefined}
+                title={!showLabels ? (isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")) : undefined}
                 className={`flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 mt-1 rounded-lg hover:bg-gray-200 transition-colors w-full text-left`}
               >
                 {isHistoryExpanded ? (
@@ -215,7 +217,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                 )}
                 {showLabels && (
                   <span className="text-gray-500 text-sm font-medium">
-                    {isHistoryExpanded ? "간략히 보기" : "기록 더보기"}
+                    {isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")}
                   </span>
                 )}
               </button>
