@@ -89,7 +89,7 @@ export default function OnboardingPage() {
         <div className="flex flex-col gap-[40px] w-full">
           {/* Step 1: 기본 정보 */}
           <FormSection label="개인 식별" heading="기본 정보">
-            <div className="grid grid-cols-2 gap-[32px] w-full mt-[8px]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] sm:gap-[32px] w-full mt-[8px]">
               {/* 연령 */}
               <div className="flex flex-col gap-[8.5px]">
                 <label className="text-[#454652] text-[14px]">연령</label>
@@ -148,7 +148,7 @@ export default function OnboardingPage() {
         <div className="flex flex-col gap-[40px] w-full">
           {/* Step 2: 주요 활용 목적 */}
           <FormSection label="맞춤 설정" heading="주요 활용 목적">
-            <div className="grid grid-cols-3 gap-[12px] mt-[8px] w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px] mt-[8px] w-full">
               {purposeOptions.map(option => (
                 <SelectableCard
                   key={option.value}
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
 
           {/* Step 2: 답변 스타일 */}
           <FormSection label="" heading="답변 스타일">
-            <div className="grid grid-cols-3 gap-[12px] mt-[8px] w-full">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px] mt-[8px] w-full">
               {styleOptions.map(option => (
                 <SelectableCard
                   key={option.value}

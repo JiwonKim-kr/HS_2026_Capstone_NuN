@@ -28,7 +28,7 @@ export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProp
             style={{ width: `${progressWidth}%` }}
           />
         </div>
-        <div className="backdrop-blur-[12px] bg-[rgba(248,249,251,0.8)] flex items-center justify-between px-[24px] py-[16px] w-full">
+        <div className="backdrop-blur-[12px] bg-[rgba(248,249,251,0.8)] flex items-center justify-between px-[16px] md:px-[24px] py-[16px] w-full">
           <span className="font-bold text-[#191c1e] text-[20px] tracking-[-1px] leading-[28px]">
             Prompt-U
           </span>
@@ -39,29 +39,31 @@ export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProp
       </div>
 
       {/* Main Content Area */}
-      <div className="flex flex-col items-center justify-center w-full min-h-screen pb-[134px] pt-[182px] px-[16px]">
-        
+      <div className="flex flex-col items-center justify-center w-full min-h-screen pb-[80px] md:pb-[134px] pt-[100px] md:pt-[182px] px-[16px]">
+
         {/* Container for Aside & Form */}
-        <div className="grid grid-cols-12 gap-[32px] w-full max-w-[896px]">
-          
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-[24px] md:gap-[32px] w-full max-w-[896px]">
+
           {/* Aside (Left) */}
-          <div className="col-span-4 flex flex-col items-start pt-[32px]">
-            <div className="flex flex-col gap-[32px] w-full">
-              <div className="flex flex-col gap-[14.75px] w-full">
-                <h1 className="text-[#191c1e] text-[30px] tracking-[-0.75px] leading-[37.5px] whitespace-pre-wrap">
+          <div className="md:col-span-4 flex flex-col items-start md:pt-[32px]">
+            <div className="flex flex-col gap-[16px] md:gap-[32px] w-full">
+              <div className="flex flex-col gap-[10px] md:gap-[14.75px] w-full">
+                <h1 className="text-[#191c1e] text-[24px] md:text-[30px] tracking-[-0.75px] leading-[1.3] whitespace-pre-wrap">
                   {title}
                 </h1>
-                <p className="text-[#454652] text-[14px] leading-[22.75px]">
+                <p className="text-[#454652] text-[14px] leading-[22.75px] hidden md:block">
                   사용자 경험을 맞춤화하세요. 이 데이터는 사용자의 전문 분야에 맞춰 Prompt-U를 튜닝하는 데 사용됩니다.
                 </p>
               </div>
-              <StepNavigation currentStep={currentStep} />
+              <div className="hidden md:block">
+                <StepNavigation currentStep={currentStep} />
+              </div>
             </div>
           </div>
 
           {/* Form Content (Right) */}
-          <div className="col-span-8">
-            <div className="bg-white flex flex-col items-start pb-[48px] pt-[32px] px-[32px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-full min-h-[562px]">
+          <div className="md:col-span-8">
+            <div className="bg-white flex flex-col items-start pb-[32px] md:pb-[48px] pt-[24px] md:pt-[32px] px-[20px] md:px-[32px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-full">
               {children}
             </div>
           </div>

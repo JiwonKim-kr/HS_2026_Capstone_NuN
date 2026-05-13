@@ -4,10 +4,10 @@ import Link from "next/link";
 export function LandingFeatures() {
   return (
     <section className="w-full bg-[#f2f4f6] flex justify-center py-[96px] px-[24px]">
-      <div className="flex gap-[64px] items-start w-full max-w-[1280px]">
-        
+      <div className="flex flex-col md:flex-row gap-[40px] md:gap-[64px] items-start w-full max-w-[1280px]">
+
         {/* Left Info Section */}
-        <div className="flex flex-col gap-[24px] w-[389.33px] flex-shrink-0">
+        <div className="flex flex-col gap-[24px] w-full md:w-[389.33px] md:flex-shrink-0">
           <div className="w-full">
             <h2 className="text-[#191c1e] text-[36px] tracking-[-0.9px] leading-[40px] m-0">
               내 스타일을 읽는 <span className="text-[#003e93]">AI,</span>
@@ -41,7 +41,7 @@ export function LandingFeatures() {
         </div>
 
         {/* Right Bento Grid */}
-        <div className="grid grid-cols-2 grid-rows-[240.25px_263px] gap-[32px] w-full min-w-[778.67px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[24px] md:gap-[32px] w-full">
           
           {/* Bento 1: 프롬프트 재구성 */}
           <div className="bg-white rounded-[12px] p-[32px] flex flex-col gap-[24px]">

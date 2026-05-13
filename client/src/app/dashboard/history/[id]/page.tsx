@@ -139,24 +139,24 @@ export default function HistoryDetailPage({
           <span className="text-[#001945] text-xs font-medium">대화 기록 · {date}</span>
         </div>
 
-        <h1 className="text-[40px] font-bold text-[#191c1e] tracking-[-1px] leading-[46px] mb-3">
+        <h1 className="text-[26px] md:text-[40px] font-bold text-[#191c1e] tracking-[-1px] leading-[1.2] mb-3">
           {title.length > 50 ? title.substring(0, 50) + '...' : title}
         </h1>
-        <p className="text-[#454652] text-[16px]">
+        <p className="text-[#454652] text-[14px] md:text-[16px]">
           입력한 프롬프트와 AI가 생성한 후보군을 확인할 수 있습니다.
         </p>
       </div>
 
       {/* ── 사용자 입력 ── */}
       <div className="w-full mb-12">
-        <div className="flex-1 border-l-4 border-[#2b3896] bg-white rounded-xl shadow-sm p-8">
+        <div className="flex-1 border-l-4 border-[#2b3896] bg-white rounded-xl shadow-sm p-5 md:p-8">
           <div className="flex items-center gap-3 mb-4">
             <Edit2 className="w-4 h-4 text-gray-500" />
             <span className="text-[#757684] text-sm tracking-[1.4px] font-medium uppercase">
               사용자 입력
             </span>
           </div>
-          <p className="text-[#191c1e] text-[20px] leading-[32.5px] italic font-medium">
+          <p className="text-[#191c1e] text-[15px] md:text-[20px] leading-[26px] md:leading-[32.5px] italic font-medium">
             &ldquo;{originalPrompt}&rdquo;
           </p>
         </div>
@@ -164,7 +164,7 @@ export default function HistoryDetailPage({
 
       {/* ── 후보군 헤더 ── */}
       <div className="w-full flex items-center mb-6">
-        <h2 className="text-[24px] text-[#191c1e] mr-4 whitespace-nowrap">
+        <h2 className="text-[18px] md:text-[24px] text-[#191c1e] mr-4 whitespace-nowrap">
           프롬프트 후보군
         </h2>
         <div className="flex-1 h-px bg-[#e0e3e5]" />
@@ -200,7 +200,7 @@ export default function HistoryDetailPage({
             return (
               <div
                 key={candidate.candidateId}
-                className={`absolute top-2 w-full max-w-[600px] h-[450px] flex flex-col bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
+                className={`absolute top-2 w-full max-w-[600px] h-[450px] flex flex-col bg-white rounded-xl p-5 md:p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
                   isCenter
                     ? "border-t-4 border-[#003e93] shadow-[0_8px_30px_rgba(0,0,0,0.08)] z-20"
                     : "border-t-4 border-transparent shadow-sm opacity-50 z-10"
@@ -224,7 +224,7 @@ export default function HistoryDetailPage({
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 mb-6">
-                  <p className="text-[16px] text-[#454652] leading-[28px] whitespace-pre-wrap">
+                  <p className="text-[13px] md:text-[16px] text-[#454652] leading-[22px] md:leading-[28px] whitespace-pre-wrap">
                     {candidate.content}
                   </p>
                 </div>
@@ -242,12 +242,12 @@ export default function HistoryDetailPage({
                     {isCopied ? (
                       <>
                         <Check className="w-5 h-5 text-green-500" />
-                        복사완료!
+                        <span className="text-xs md:text-sm">복사완료!</span>
                       </>
                     ) : (
                       <>
                         <Copy className="w-5 h-5" />
-                        이 프롬프트 복사하기
+                        <span className="text-xs md:text-sm">이 프롬프트 복사하기</span>
                       </>
                     )}
                   </button>
