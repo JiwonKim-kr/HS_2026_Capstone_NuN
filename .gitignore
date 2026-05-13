@@ -1,0 +1,17 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node modules
+node_modules/
+
+# Other IDE/OS files
+.DS_Store
+.idea/
+Thumbs.db
+
+.claude/
+.vscode/
+
+supabase/.temp/

@@ -34,7 +34,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`/api/prompts/history?userId=${user.id}`);
+        const res = await fetch(`/api/prompts/history`);
         const json = await res.json();
         if (json.success && json.data) {
           setHistory(json.data);

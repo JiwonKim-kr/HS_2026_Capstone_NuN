@@ -25,7 +25,7 @@ export default function SettingsPage() {
       </div>
 
       <div className="flex flex-col gap-[32px] w-full">
-        
+
         {/* Section 1: Language Change */}
         <section className="bg-white p-[32px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[24px] w-full">
           <div className="flex items-start gap-[12px] w-full max-w-[285.8px]">
@@ -39,7 +39,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="relative w-full sm:w-[240px]">
-            <select 
+            <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Language)}
               className="bg-[#f2f4f6] text-[#191c1e] font-medium text-[16px] h-[48px] w-full rounded-[8px] pl-[16px] pr-[40px] appearance-none outline-none focus:ring-2 focus:ring-[#003e93]/50 transition-shadow cursor-pointer"
@@ -63,41 +63,22 @@ export default function SettingsPage() {
           {/* 스크롤 가능한 처리방침 박스 */}
           <div className="bg-[#f2f4f6] h-[160px] rounded-[8px] p-[24px] overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:bg-[#d1d5db] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
             <div className="flex flex-col gap-[22px] text-[#454652] text-[14px] leading-[22.75px]">
-              {language === 'ko' ? (
-                <>
-                  <p>
-                    Prompt-U는 사용자의 개인정보 보호를 최우선으로 생각합니다. 당사는 서비스 제공을 위해 필요한 최소한의 데이터만을 수집하며, 모든 데이터는 최신 암호화 표준을 통해 안전하게 관리됩니다.
-                  </p>
-                  <div>
-                    <p>1. 수집하는 개인정보 항목: 이메일, 회사 정보, 서비스 이용 기록.</p>
-                    <p>2. 수집 목적: 맞춤형 AI 큐레이션 서비스 제공 및 사용자 인증.</p>
-                    <p>3. 보유 기간: 회원 탈퇴 시 혹은 법적 보관 의무 기간 종료 시까지.</p>
-                  </div>
-                  <p>상세한 내용은 '전문 보기' 링크를 통해 확인하실 수 있습니다.</p>
-                  <div className="h-[1px] bg-slate-300 w-full my-4" />
-                  <p className="text-gray-400 italic">(이하 스크롤 확인용 더미 텍스트)</p>
-                  <p>
-                    당사는 개인정보보호법 및 관련 법령을 철저히 준수합니다. 본 방침은 추가적인 서비스를 적용할 때 언제든 수정될 수 있으며, 수정 시에는 공지사항을 통해 사전 안내해 드립니다. 사용자의 권익 보호를 위해 투명하고 공정한 데이터 활용 원칙을 마련하고 있습니다.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>
-                    Prompt-U considers the protection of users' personal information a top priority. We collect only the minimum data necessary to provide our services, and all data is securely managed through the latest encryption standards.
-                  </p>
-                  <div>
-                    <p>1. Items of personal information collected: Email, company information, service usage records.</p>
-                    <p>2. Purpose of collection: Provision of customized AI curation services and user authentication.</p>
-                    <p>3. Retention period: Until account withdrawal or the end of the legal retention period.</p>
-                  </div>
-                  <p>Detailed information can be found through the 'View Full Text' link.</p>
-                  <div className="h-[1px] bg-slate-300 w-full my-4" />
-                  <p className="text-gray-400 italic">(Dummy text for scrolling)</p>
-                  <p>
-                    We strictly comply with the Personal Information Protection Act and related laws. This policy is subject to change at any time when additional services are applied, and we will notify you in advance through announcements when modifying it. We have established transparent and fair data utilization principles to protect the rights and interests of users.
-                  </p>
-                </>
-              )}
+              <p>
+                Intelligence Layer는 사용자의 개인정보 보호를 최우선으로 생각합니다. 당사는 서비스 제공을 위해 필요한 최소한의 데이터만을 수집하며, 모든 데이터는 최신 암호화 표준을 통해 안전하게 관리됩니다.
+              </p>
+              <div>
+                <p>1. 수집하는 개인정보 항목: 이메일, 회사 정보, 서비스 이용 기록.</p>
+                <p>2. 수집 목적: 맞춤형 AI 큐레이션 서비스 제공 및 사용자 인증.</p>
+                <p>3. 보유 기간: 회원 탈퇴 시 혹은 법적 보관 의무 기간 종료 시까지.</p>
+              </div>
+              <p>상세한 내용은 '전문 보기' 링크를 통해 확인하실 수 있습니다.</p>
+
+              {/* 스크롤 확인용 더미 데이터 반복 */}
+              <div className="h-[1px] bg-slate-300 w-full my-4" />
+              <p className="text-gray-400 italic">(이하 스크롤 확인용 더미 텍스트)</p>
+              <p>
+                당사는 개인정보보호법 및 관련 법령을 철저히 준수합니다. 본 방침은 추가적인 서비스를 적용할 때 언제든 수정될 수 있으며, 수정 시에는 공지사항을 통해 사전 안내해 드립니다. 사용자의 권익 보호를 위해 투명하고 공정한 데이터 활용 원칙을 마련하고 있습니다.
+              </p>
             </div>
           </div>
         </section>
@@ -107,7 +88,7 @@ export default function SettingsPage() {
           <div className="bg-[#ba1a1a]/10 w-[38px] h-[35px] rounded-[8px] flex items-center justify-center shrink-0 mt-[4px]">
             <AlertTriangle className="w-[18px] h-[18px] text-[#ba1a1a]" />
           </div>
-          
+
           <div className="flex flex-col gap-[16px] w-full">
             <div className="flex flex-col gap-[8px]">
               <h3 className="text-[#93000a] text-[18px] leading-[28px]">
@@ -128,7 +109,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={handleDeleteAccount}
               className="bg-[#ba1a1a] hover:bg-[#93000a] text-white text-[14px] h-[40px] px-[24px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-fit transition-colors flex items-center justify-center"
             >

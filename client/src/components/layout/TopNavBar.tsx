@@ -44,11 +44,11 @@ export function TopNavBar({ onMenuClick }: { onMenuClick?: () => void }) {
         >
           <Menu className="w-5 h-5 text-gray-700" />
         </button>
-        <Link href="/dashboard">
+        <a href="/dashboard">
           <h1 className="font-bold text-[#191c1e] text-[20px] tracking-[-1px] cursor-pointer hover:opacity-80 transition-opacity">
             Prompt-U
           </h1>
-        </Link>
+        </a>
       </div>
 
       <div className="relative" ref={dropdownRef}>

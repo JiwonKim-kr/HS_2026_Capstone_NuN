@@ -6,14 +6,12 @@ import { PromptCandidateType } from "@/schemas/promptSchema";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface OptimizationResultProps {
-  userId: string;
   originalPrompt: string;
   selectedCandidate: PromptCandidateType | null;
   onRestart: () => void;
 }
 
-export function OptimizationResult({ userId, originalPrompt, selectedCandidate, onRestart }: OptimizationResultProps) {
-  const { t } = useTranslation();
+export function OptimizationResult({ originalPrompt, selectedCandidate, onRestart }: OptimizationResultProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
@@ -29,7 +27,6 @@ export function OptimizationResult({ userId, originalPrompt, selectedCandidate, 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            userId,
             originalInput: originalPrompt,
             chosenPrompt: selectedCandidate.content,
             chosenMetadata: selectedCandidate.metadata,
@@ -54,7 +51,6 @@ export function OptimizationResult({ userId, originalPrompt, selectedCandidate, 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           historyId,
-          userId,
           appliedTiers: selectedCandidate.metadata.appliedTiers
         })
       });
