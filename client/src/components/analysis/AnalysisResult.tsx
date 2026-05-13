@@ -24,6 +24,7 @@ interface AnalysisResultProps {
 }
 
 export function AnalysisResult({ originalPrompt, candidates, loading, error, onRestart }: AnalysisResultProps) {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedStatus, setLikedStatus] = useState<Record<string, boolean>>({});
