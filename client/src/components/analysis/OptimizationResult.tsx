@@ -12,6 +12,7 @@ interface OptimizationResultProps {
 }
 
 export function OptimizationResult({ originalPrompt, selectedCandidate, onRestart }: OptimizationResultProps) {
+  const { t } = useTranslation();
   const [isCopied, setIsCopied] = useState(false);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
