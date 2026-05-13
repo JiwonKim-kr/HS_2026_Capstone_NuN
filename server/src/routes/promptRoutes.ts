@@ -42,7 +42,7 @@ router.post('/generate', async (req: Request, res: Response): Promise<void> => {
 });
 
 import { processFeedback } from '../services/feedbackService';
-import { getUserSessions, getSessionDetails } from '../services/historyService';
+import { getUserSessions, getSessionDetails, deleteSession } from '../services/historyService';
 
 router.get('/history/:userId', async (req: Request, res: Response): Promise<void> => {
   try {
@@ -77,6 +77,22 @@ router.get('/history/detail/:sessionId', async (req: Request, res: Response): Pr
     res.status(200).json({ success: true, data: sessionDetails });
   } catch (error: any) {
     console.error('Fetch History Detail Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.delete('/history/:sessionId', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { sessionId } = req.params;
+    if (!sessionId) {
+      res.status(400).json({ success: false, error: 'Session ID is required' });
+      return;
+    }
+
+    await deleteSession(sessionId as string);
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error('Delete History Error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { Menu, Plus, MessageSquare, ChevronDown, ChevronUp, X } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
 interface SessionData {
@@ -24,6 +24,8 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
   const [history, setHistory] = useState<SessionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deletePopoverPos, setDeletePopoverPos] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -57,6 +59,44 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
   const visibleHistory = isHistoryExpanded ? history : history.slice(0, 3);
   const showMoreButton = history.length > 3;
   const showLabels = isOpen || isMobileOpen;
+
+  const handleDeleteClick = (e: React.MouseEvent, sessionId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirmId(sessionId);
+    setDeletePopoverPos({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleCancelDelete = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteConfirmId(null);
+    setDeletePopoverPos(null);
+  };
+
+  const handleConfirmDelete = async (e: React.MouseEvent, sessionId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const res = await fetch(`/api/prompts/history/${sessionId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setHistory(prev => prev.filter(s => s.sessionId !== sessionId));
+        setDeleteConfirmId(null);
+        setDeletePopoverPos(null);
+        if (pathname === `/dashboard/history/${sessionId}`) {
+          window.location.href = '/dashboard';
+        }
+      } else {
+        alert('삭제에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('삭제 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <>
@@ -114,6 +154,49 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                 const href = `/dashboard/history/${session.sessionId}`;
                 const isActive = pathname === href;
                 return (
+                  <div key={session.sessionId} className="relative w-full">
+                    <Link
+                      href={href}
+                      title={!isOpen ? session.title : undefined}
+                      className={`flex ${isOpen ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg transition-colors w-full text-left ${
+                        isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
+                      }`}
+                    >
+                      <div className="relative w-4 h-4 shrink-0 flex items-center justify-center group">
+                        <MessageSquare className={`w-4 h-4 absolute transition-opacity duration-200 ${isActive ? 'text-[#003e93]' : 'text-gray-400'} group-hover:opacity-0 ${deleteConfirmId === session.sessionId ? 'opacity-0' : ''}`} />
+                        <button 
+                          onClick={(e) => handleDeleteClick(e, session.sessionId)}
+                          className={`absolute transition-opacity duration-200 text-gray-400 hover:text-red-500 z-10 ${deleteConfirmId === session.sessionId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {isOpen && <span className={`truncate text-sm font-medium leading-normal pb-[2px] ${isActive ? 'text-[#003e93]' : 'text-[#454652]'}`}>{session.title}</span>}
+                    </Link>
+
+                    {deleteConfirmId === session.sessionId && deletePopoverPos && (
+                      <div 
+                        className="fixed bg-white border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)] rounded-md p-1 flex gap-1 z-[100]"
+                        style={{ 
+                          top: deletePopoverPos.y - 10, 
+                          left: deletePopoverPos.x + 10 
+                        }}
+                      >
+                        <button 
+                          onClick={(e) => handleConfirmDelete(e, session.sessionId)}
+                          className="text-[11px] font-medium text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
+                        >
+                          삭제
+                        </button>
+                        <button 
+                          onClick={handleCancelDelete}
+                          className="text-[11px] font-medium text-gray-600 hover:bg-gray-100 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    )}
+                  </div>
                   <Link
                     key={session.sessionId}
                     href={href}
