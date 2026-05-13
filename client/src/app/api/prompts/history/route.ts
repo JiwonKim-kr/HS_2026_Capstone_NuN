@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getUserSessions } from '@/lib/services/historyService';
 
 export async function GET(request: Request) {
   try {
@@ -12,16 +13,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const EXPRESS_API_URL = process.env.EXPRESS_API_URL || 'http://localhost:5001';
-    const res = await fetch(`${EXPRESS_API_URL}/api/prompts/history/${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const data = await res.json();
-    return NextResponse.json(data);
+    const sessions = await getUserSessions(userId);
+    return NextResponse.json({ success: true, data: sessions });
   } catch (error) {
     console.error('History API Route Error:', error);
     return NextResponse.json(

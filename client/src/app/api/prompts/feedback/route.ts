@@ -1,32 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const EXPRESS_API_URL = process.env.EXPRESS_API_URL;
+import { processFeedback } from '@/lib/services/feedbackService';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    const res = await fetch(`${EXPRESS_API_URL}/api/prompts/feedback`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
+    const { historyId, userId, appliedTiers, targetLikeStatus } = await req.json();
+    if (!historyId || !userId || !appliedTiers || typeof targetLikeStatus !== 'boolean') {
       return NextResponse.json(
-        { success: false, error: data?.error || '서버 오류' },
-        { status: res.status }
+        { success: false, error: 'Missing required fields or invalid format' },
+        { status: 400 }
       );
     }
-
-    return NextResponse.json(data);
+    const result = await processFeedback({ historyId, userId, appliedTiers, targetLikeStatus });
+    return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
-    console.error('[Proxy] Express 서버 연결 실패:', error);
+    console.error('[Feedback] Error:', error);
     return NextResponse.json(
-      { success: false, error: '프롬프트 서버에 연결할 수 없습니다.' },
-      { status: 503 }
+      { success: false, error: error.message || '서버 오류' },
+      { status: 500 }
     );
   }
 }

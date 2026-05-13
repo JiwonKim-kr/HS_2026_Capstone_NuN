@@ -1,7 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateText, Output } from 'ai';
 import { createClient } from '@supabase/supabase-js';
-import { GeneratePromptRequestType, generatePromptResponseSchema } from '../schemas/promptSchema';
+import { GeneratePromptRequestType, generatePromptResponseSchema } from '@/lib/schemas/promptSchema';
 import { randomUUID } from 'crypto';
 
 const supabase = createClient(
