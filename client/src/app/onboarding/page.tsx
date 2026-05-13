@@ -95,10 +95,14 @@ export default function OnboardingPage() {
               <div className="flex flex-col gap-[8.5px]">
                 <label className="text-[#454652] text-[14px]">연령</label>
                 <div className="bg-[#f2f4f6] h-[48px] rounded-[8px] flex items-center px-[12px] w-full border-2 border-transparent focus-within:border-[#003e93] transition-colors">
-                  <input 
+                  <input
                     type="number"
+                    min="0"
                     value={age}
-                    onChange={(e) => setAge(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "" || Number(val) >= 0) setAge(val);
+                    }}
                     placeholder="25"
                     className="bg-transparent border-none outline-none text-[16px] text-[#6b7280] w-full"
                   />

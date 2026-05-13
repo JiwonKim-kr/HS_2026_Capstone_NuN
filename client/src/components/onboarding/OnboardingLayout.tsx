@@ -56,9 +56,6 @@ export function OnboardingLayout({ children, currentStep, onStepChange }: Onboar
                   사용자 경험을 맞춤화하세요. 이 데이터는 사용자의 전문 분야에 맞춰 Prompt-U를 튜닝하는 데 사용됩니다.
                 </p>
               </div>
-              <div className="hidden md:block">
-                <StepNavigation currentStep={currentStep} />
-              </div>
               <StepNavigation currentStep={currentStep} onStepChange={onStepChange} />
             </div>
           </div>
