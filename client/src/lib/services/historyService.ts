@@ -35,11 +35,12 @@ export const getUserSessions = async (userId: string) => {
   return Array.from(uniqueSessionsMap.values());
 };
 
-export const getSessionDetails = async (sessionId: string) => {
+export const getSessionDetails = async (sessionId: string, userId: string) => {
   const { data, error } = await supabase
     .from('prompt_logs')
     .select('id, session_id, user_id, original_input, chosen_prompt, chosen_metadata, is_liked, created_at')
     .eq('session_id', sessionId)
+    .eq('user_id', userId)
     .order('created_at', { ascending: true });
 
   if (error) {
@@ -73,15 +74,20 @@ export const getSessionDetails = async (sessionId: string) => {
   };
 };
 
-export const deleteSession = async (sessionId: string) => {
-  const { error } = await supabase
+export const deleteSession = async (sessionId: string, userId: string) => {
+  const { error, count } = await supabase
     .from('prompt_logs')
-    .delete()
-    .eq('session_id', sessionId);
+    .delete({ count: 'exact' })
+    .eq('session_id', sessionId)
+    .eq('user_id', userId);
 
   if (error) {
     console.error('Error deleting session:', error);
     throw new Error('히스토리 삭제에 실패했습니다.');
+  }
+
+  if (count === 0) {
+    return null;
   }
 
   return { success: true };

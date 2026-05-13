@@ -14,7 +14,6 @@ const LOADING_MESSAGES = [
 ];
 
 interface AnalysisResultProps {
-  userId: string;
   originalPrompt: string;
   candidates: PromptCandidateType[];
   loading: boolean;
@@ -22,7 +21,7 @@ interface AnalysisResultProps {
   onRestart: () => void;
 }
 
-export function AnalysisResult({ userId, originalPrompt, candidates, loading, error, onRestart }: AnalysisResultProps) {
+export function AnalysisResult({ originalPrompt, candidates, loading, error, onRestart }: AnalysisResultProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedStatus, setLikedStatus] = useState<Record<string, boolean>>({});
@@ -73,7 +72,6 @@ export function AnalysisResult({ userId, originalPrompt, candidates, loading, er
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           historyId: candidate.logId,
-          userId,
           appliedTiers: candidate.metadata.appliedTiers,
           targetLikeStatus: targetStatus
         }),

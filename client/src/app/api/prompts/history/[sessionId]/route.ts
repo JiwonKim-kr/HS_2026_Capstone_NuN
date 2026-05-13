@@ -1,26 +1,38 @@
 import { NextResponse } from 'next/server';
 import { deleteSession } from '@/lib/services/historyService';
+import { getAuthenticatedUser } from '@/lib/supabase/server';
 
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
-  try {
-    const { sessionId } = await params;
+  const { user, error } = await getAuthenticatedUser();
+  if (error) return error;
 
-    if (!sessionId) {
+  const { sessionId } = await params;
+
+  if (!sessionId) {
+    return NextResponse.json(
+      { success: false, error: 'Session ID is required' },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const result = await deleteSession(sessionId, user.id);
+
+    if (result === null) {
       return NextResponse.json(
-        { success: false, error: 'Session ID is required' },
-        { status: 400 }
+        { success: false, error: 'Session not found' },
+        { status: 404 }
       );
     }
 
-    const result = await deleteSession(sessionId);
     return NextResponse.json(result);
-  } catch (error: any) {
-    console.error('History Delete API Route Error:', error);
+  } catch (err: any) {
+    console.error('History Delete API Route Error:', err);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to delete history' },
+      { success: false, error: err.message || 'Failed to delete history' },
       { status: 500 }
     );
   }
