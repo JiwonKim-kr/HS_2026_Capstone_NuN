@@ -27,6 +27,7 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -82,6 +83,8 @@ export default function ProfilePage() {
 
     if (!error) {
       setOriginalData(userData);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
     } else {
       console.error("프로필 업데이트 실패:", error);
     }
@@ -254,6 +257,19 @@ export default function ProfilePage() {
             >
               {isSaving ? "저장 중..." : "적용하기"}
             </button>
+          </div>
+        )}
+
+        {/* 성공 메시지 */}
+        {showSuccess && !isDirty && (
+          <div className="flex justify-end mt-4 w-full">
+            <div className="bg-[#e8f5e9] text-[#2e7d32] border border-[#a5d6a7] px-4 py-2.5 rounded-[8px] flex items-center gap-2 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+              <span className="text-[14px] font-semibold">변경사항이 성공적으로 적용되었습니다.</span>
+            </div>
           </div>
         )}
 

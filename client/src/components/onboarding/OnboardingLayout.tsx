@@ -4,9 +4,10 @@ import { StepNavigation } from "./StepNavigation";
 interface OnboardingLayoutProps {
   children: ReactNode;
   currentStep: number;
+  onStepChange?: (step: number) => void;
 }
 
-export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProps) {
+export function OnboardingLayout({ children, currentStep, onStepChange }: OnboardingLayoutProps) {
   // Title text depends on step
   const title = currentStep === 1 
     ? "나만의 AI 프롬프터를\n만들어보세요." 
@@ -58,6 +59,7 @@ export function OnboardingLayout({ children, currentStep }: OnboardingLayoutProp
               <div className="hidden md:block">
                 <StepNavigation currentStep={currentStep} />
               </div>
+              <StepNavigation currentStep={currentStep} onStepChange={onStepChange} />
             </div>
           </div>
 

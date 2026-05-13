@@ -17,8 +17,8 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   // Form State
-  const [age, setAge] = useState<string>("25");
-  const [gender, setGender] = useState<string>("남성");
+  const [age, setAge] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
   const [job, setJob] = useState<string>("");
   
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>([]);
@@ -66,6 +66,7 @@ export default function OnboardingPage() {
   const genderOptions = [
     { label: "남성", value: "남성" },
     { label: "여성", value: "여성" },
+    { label: "선택안함", value: "선택안함" },
   ];
 
   const purposeOptions = [
@@ -84,7 +85,7 @@ export default function OnboardingPage() {
   ];
 
   return (
-    <OnboardingLayout currentStep={currentStep}>
+    <OnboardingLayout currentStep={currentStep} onStepChange={setCurrentStep}>
       {currentStep === 1 ? (
         <div className="flex flex-col gap-[40px] w-full">
           {/* Step 1: 기본 정보 */}
@@ -180,6 +181,7 @@ export default function OnboardingPage() {
 
           <ActionFooter 
             onNext={handleNextStep}
+            disabled={selectedPurposes.length === 0}
           />
         </div>
       )}
