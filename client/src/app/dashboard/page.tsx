@@ -52,7 +52,7 @@ export default function Home() {
         <div className="flex flex-col items-center w-full max-w-5xl mx-auto h-full pt-12 pb-16">
           {/* Header Text */}
           <div className="w-full max-w-[830px] mb-12">
-            <h2 className="text-[36px] font-bold text-[#191c1e] tracking-[-0.9px] leading-[40px] mb-3">
+            <h2 className="text-[24px] md:text-[36px] font-bold text-[#191c1e] tracking-[-0.9px] leading-[40px] mb-3">
               당신의 아이디어를 구체화하세요.
             </h2>
             <p className="text-[#454652] text-[18px] leading-[28px]">

@@ -137,7 +137,7 @@ export default function ProfilePage() {
             <h3 className="text-[#1f2937] text-[20px] font-bold leading-[28px]">기본 정보</h3>
           </div>
 
-          <div className="grid grid-cols-2 gap-[24px] w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[24px] w-full">
             {/* 연령 (수정 가능) */}
             <div className="flex flex-col gap-[8px]">
               <label className="text-[#374151] text-[14px] font-medium leading-[20px]">연령</label>
@@ -205,7 +205,7 @@ export default function ProfilePage() {
             <h3 className="text-[#1f2937] text-[20px] font-bold leading-[28px]">주요 활용 목적</h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-[16px] w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[16px] w-full">
             {purposeOptions.map(option => (
               <SelectableCard
                 key={option.value}
@@ -226,7 +226,7 @@ export default function ProfilePage() {
             <h3 className="text-[#1f2937] text-[20px] font-bold leading-[28px]">답변 스타일</h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-[16px] w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-[16px] w-full">
             {styleOptions.map(option => (
               <SelectableCard
                 key={option.value}

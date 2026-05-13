@@ -28,24 +28,24 @@ export function LandingHero() {
   };
 
   return (
-    <section className="relative w-full flex justify-center pt-[128px] pb-[80px] px-[24px] overflow-hidden">
-      <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-[48px] w-full max-w-[1280px] min-h-[573px] relative z-10">
+    <section className="relative w-full flex justify-center pt-[80px] md:pt-[128px] pb-[80px] px-[24px] overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[40px] md:gap-[48px] w-full max-w-[1280px] relative z-10">
 
         {/* Left Side: Copy */}
         <div className="flex flex-col justify-center gap-[32px] w-full self-center">
           <div className="w-full">
             <h1 className="flex flex-col tracking-[-1.8px] font-normal m-0">
-              <div className="leading-[96px]">
-                <span className="text-[#2b3896] text-[96px]">Prompt</span>
-                <span className="text-[96px]">{` `}</span>
-                <span className="text-[#003e93] text-[96px]">- U</span>
-                <span className="text-[#2b3896] text-[72px]">,</span>
+              <div className="leading-[1] mb-1">
+                <span className="text-[#2b3896] text-[48px] md:text-[80px] lg:text-[96px]">Prompt</span>
+                <span className="text-[48px] md:text-[80px] lg:text-[96px]">{` `}</span>
+                <span className="text-[#003e93] text-[48px] md:text-[80px] lg:text-[96px]">- U</span>
+                <span className="text-[#2b3896] text-[36px] md:text-[60px] lg:text-[72px]">,</span>
               </div>
-              <div className="leading-[72px]">
-                <span className="text-[#191c1e] text-[72px]">AI를 다루는</span>
+              <div className="leading-[1.1]">
+                <span className="text-[#191c1e] text-[32px] md:text-[56px] lg:text-[72px]">AI를 다루는</span>
               </div>
-              <div className="leading-[72px]">
-                <span className="text-[#191c1e] text-[72px]">당신만의 방식.</span>
+              <div className="leading-[1.1]">
+                <span className="text-[#191c1e] text-[32px] md:text-[56px] lg:text-[72px]">당신만의 방식.</span>
               </div>
             </h1>
           </div>

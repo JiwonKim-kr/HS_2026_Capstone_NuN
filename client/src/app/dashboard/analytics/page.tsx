@@ -62,7 +62,7 @@ export default function AnalyticsPage() {
 
       {/* Content Area */}
       <div className="flex w-full">
-        <div className="bg-white border border-[#c5c5d4]/10 w-[802px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] p-[33px] flex flex-col gap-10">
+        <div className="bg-white border border-[#c5c5d4]/10 w-full max-w-[802px] rounded-[12px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] p-[20px] md:p-[33px] flex flex-col gap-10">
           <div className="flex items-center justify-between w-full">
             <h2 className="text-[#191c1e] text-[20px] font-medium leading-[28px]">
               사용자 가중치 시각화
