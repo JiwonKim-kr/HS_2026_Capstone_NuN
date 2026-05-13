@@ -15,7 +15,7 @@ export function MainLayout({ children }: { children: ReactNode }) {
           isMobileOpen={isMobileMenuOpen}
           onMobileClose={() => setIsMobileMenuOpen(false)}
         />
-        <main className="flex-1 relative h-full flex flex-col px-4 md:px-8 lg:px-16 overflow-y-auto w-full">
+        <main className="flex-1 relative h-full flex flex-col px-4 md:px-8 lg:px-16 overflow-y-auto w-full transition-all duration-300">
           {children}
         </main>
       </div>
