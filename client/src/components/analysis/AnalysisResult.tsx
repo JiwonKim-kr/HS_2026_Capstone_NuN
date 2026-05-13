@@ -181,11 +181,10 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
                 return (
                   <div
                     key={candidate.candidateId}
-                    className={`absolute top-2 w-full max-w-[600px] h-[450px] flex flex-col bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${
-                      isCenter
+                    className={`absolute top-2 w-full max-w-[600px] h-[450px] flex flex-col bg-white rounded-xl p-10 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] ${isCenter
                         ? "border-t-4 border-[#003e93] shadow-[0_8px_30px_rgba(0,0,0,0.08)] z-20 cursor-default"
                         : "border-t-4 border-transparent shadow-sm opacity-50 z-10 cursor-pointer"
-                    }`}
+                      }`}
                     style={{
                       transform: transformStr,
                       pointerEvents: isCenter ? 'auto' : 'auto'
@@ -213,13 +212,12 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
 
                     {/* Inline Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t border-gray-100 mt-auto">
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleCopy(candidate); }}
-                        className={`flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 ${
-                          isCopied 
-                            ? 'bg-green-50 text-green-600 border border-green-200' 
+                        className={`flex-1 py-3 px-4 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 ${isCopied
+                            ? 'bg-green-50 text-green-600 border border-green-200'
                             : 'bg-[#f8f9fb] text-[#454652] hover:bg-[#e9ecef] border border-transparent'
-                        }`}
+                          }`}
                       >
                         {isCopied ? (
                           <>
@@ -234,13 +232,12 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
                         )}
                       </button>
 
-                      <button 
+                      <button
                         onClick={(e) => { e.stopPropagation(); handleToggleLike(candidate); }}
-                        className={`py-3 px-6 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 border ${
-                          isLiked
+                        className={`py-3 px-6 rounded-xl flex items-center justify-center gap-2 font-medium transition-all duration-300 border ${isLiked
                             ? 'bg-green-50 text-green-700 border-green-300 shadow-sm'
                             : 'bg-white text-[#757684] border-gray-200 hover:bg-gray-50'
-                        }`}
+                          }`}
                         title={isLiked ? "추천 취소" : "이 프롬프트 추천하기"}
                       >
                         <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-green-600 text-green-600' : ''}`} />
