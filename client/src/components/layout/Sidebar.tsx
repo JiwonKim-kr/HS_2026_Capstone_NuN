@@ -60,7 +60,6 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
 
   const visibleHistory = isHistoryExpanded ? history : history.slice(0, 3);
   const showMoreButton = history.length > 3;
-  const showLabels = isOpen || isMobileOpen;
 
   const handleDeleteClick = (e: React.MouseEvent, sessionId: string) => {
     e.preventDefault();
@@ -110,47 +109,68 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         />
       )}
 
-      {/* 사이드바 본체 */}
-      <aside className={`
-        bg-[#f2f4f6] flex flex-col h-full items-start p-4 shrink-0 transition-all duration-300 z-50
-        fixed md:relative inset-y-0 left-0
-        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        ${isOpen ? 'w-[256px]' : 'w-[256px] md:w-[72px] md:items-center'}
-        pt-[72px] md:pt-4
-      `}>
-      <div className={`flex flex-col h-[37px] pb-4 w-full ${isOpen ? '' : 'md:items-center'}`}>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="hidden md:flex w-8 h-8 items-center justify-center hover:bg-gray-200 rounded-md transition-colors shrink-0"
-        >
-          <Menu className="w-6 h-6 text-gray-700" />
-        </button>
-      </div>
+      {/* 사이드바 본체 — 너비만 트랜지션, 내부 레이아웃은 고정 */}
+      <aside
+        className={`
+          bg-[#f2f4f6] flex flex-col h-full shrink-0 z-50
+          fixed md:relative inset-y-0 left-0
+          transition-[width] duration-300 ease-in-out
+          overflow-hidden
+          ${isMobileOpen ? 'translate-x-0 w-[256px]' : '-translate-x-full md:translate-x-0'}
+          ${!isMobileOpen ? (isOpen ? 'md:w-[256px]' : 'md:w-[68px]') : ''}
+          pt-[72px] md:pt-4
+        `}
+      >
+        {/* 토글 버튼 영역 */}
+        <div className="flex items-center h-[52px] px-4 shrink-0">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="hidden md:flex w-8 h-8 items-center justify-center hover:bg-gray-200 rounded-md transition-colors shrink-0"
+          >
+            <Menu className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
 
-      <div className="pt-2 w-full flex justify-center">
-        <Link
-          href="/dashboard"
-          title={!showLabels ? t("sidebar.new_chat") : undefined}
-          className={`bg-white hover:bg-gray-50 transition-colors flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-3 rounded-lg shadow-sm w-full border border-gray-100`}
-        >
-          <Plus className="w-4 h-4 text-[#003e93] shrink-0" />
-          {showLabels && <span className="font-medium text-[#003e93] text-sm whitespace-nowrap">{t("sidebar.new_chat")}</span>}
-        </Link>
-      </div>
+        {/* 새 채팅 버튼 — 아이콘 고정 위치, 텍스트만 페이드 */}
+        <div className="px-3 pb-2 shrink-0">
+          <Link
+            href="/dashboard"
+            title={!isOpen ? t("sidebar.new_chat") : undefined}
+            className="bg-white hover:bg-gray-50 transition-colors flex items-center gap-3 px-3 py-3 rounded-lg shadow-sm w-full border border-gray-100 overflow-hidden"
+          >
+            <Plus className="w-4 h-4 text-[#003e93] shrink-0" />
+            <span
+              className={`font-medium text-[#003e93] text-sm whitespace-nowrap transition-opacity duration-200 ${
+                isOpen ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {t("sidebar.new_chat")}
+            </span>
+          </Link>
+        </div>
 
-      <div className="pt-2 w-full flex-grow">
-        <div className="flex flex-col py-2 w-full items-center">
-          {showLabels && (
-            <div className="px-4 py-2 w-full text-left">
-              <h3 className="text-[#757684] text-[11px] font-medium tracking-wide whitespace-nowrap">{t("sidebar.history")}</h3>
-            </div>
-          )}
+        {/* 히스토리 섹션 */}
+        <div className="flex-grow overflow-y-auto px-3">
+          {/* 섹션 헤더 */}
+          <div
+            className={`px-1 pt-3 pb-1 overflow-hidden transition-opacity duration-200 ${
+              isOpen ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <h3 className="text-[#757684] text-[11px] font-medium tracking-wide whitespace-nowrap">
+              {t("sidebar.history")}
+            </h3>
+          </div>
 
-          <div className="flex flex-col gap-1 w-full max-h-[512px] overflow-y-auto mt-2 overflow-x-hidden">
+          <div className="flex flex-col gap-1 mt-1">
             {isLoading ? (
-              showLabels && <div className="px-4 py-2 text-sm text-gray-400">{t("sidebar.loading")}</div>
+              <div className={`px-1 py-2 text-sm text-gray-400 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                {t("sidebar.loading")}
+              </div>
             ) : history.length === 0 ? (
-              showLabels && <div className="px-4 py-2 text-sm text-gray-400">{t("sidebar.empty")}</div>
+              <div className={`px-1 py-2 text-sm text-gray-400 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                {t("sidebar.empty")}
+              </div>
             ) : (
               visibleHistory.map((session) => {
                 const href = `/dashboard/history/${session.sessionId}`;
@@ -159,39 +179,45 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
                   <div key={session.sessionId} className="relative w-full">
                     <Link
                       href={href}
-                      title={!showLabels ? session.title : undefined}
-                      className={`flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 rounded-lg transition-colors w-full text-left ${
+                      title={!isOpen ? session.title : undefined}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors w-full text-left overflow-hidden ${
                         isActive ? 'bg-gray-200 text-[#003e93]' : 'hover:bg-gray-200'
                       }`}
                       onClick={onMobileClose}
                     >
                       <div className="relative w-4 h-4 shrink-0 flex items-center justify-center group">
                         <MessageSquare className={`w-4 h-4 absolute transition-opacity duration-200 ${isActive ? 'text-[#003e93]' : 'text-gray-400'} group-hover:opacity-0 ${deleteConfirmId === session.sessionId ? 'opacity-0' : ''}`} />
-                        <button 
+                        <button
                           onClick={(e) => handleDeleteClick(e, session.sessionId)}
                           className={`absolute transition-opacity duration-200 text-gray-400 hover:text-red-500 z-10 ${deleteConfirmId === session.sessionId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                      {showLabels && <span className={`truncate text-sm font-medium leading-normal pb-[2px] ${isActive ? 'text-[#003e93]' : 'text-[#454652]'}`}>{session.title}</span>}
+                      <span
+                        className={`truncate text-sm font-medium leading-normal pb-[2px] whitespace-nowrap transition-opacity duration-200 ${
+                          isActive ? 'text-[#003e93]' : 'text-[#454652]'
+                        } ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+                      >
+                        {session.title}
+                      </span>
                     </Link>
 
                     {deleteConfirmId === session.sessionId && deletePopoverPos && (
-                      <div 
+                      <div
                         className="fixed bg-white border border-gray-200 shadow-[0_2px_8px_rgba(0,0,0,0.08)] rounded-md p-1 flex gap-1 z-[100]"
-                        style={{ 
-                          top: deletePopoverPos.y - 10, 
-                          left: deletePopoverPos.x + 10 
+                        style={{
+                          top: deletePopoverPos.y - 10,
+                          left: deletePopoverPos.x + 10
                         }}
                       >
-                        <button 
+                        <button
                           onClick={(e) => handleConfirmDelete(e, session.sessionId)}
                           className="text-[11px] font-medium text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
                         >
                           {t("sidebar.delete")}
                         </button>
-                        <button 
+                        <button
                           onClick={handleCancelDelete}
                           className="text-[11px] font-medium text-gray-600 hover:bg-gray-100 px-2.5 py-1.5 rounded transition-colors whitespace-nowrap"
                         >
@@ -207,25 +233,26 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             {!isLoading && showMoreButton && (
               <button
                 onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
-                title={!showLabels ? (isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")) : undefined}
-                className={`flex ${showLabels ? 'gap-3 px-4' : 'justify-center px-0'} items-center py-2.5 mt-1 rounded-lg hover:bg-gray-200 transition-colors w-full text-left`}
+                title={!isOpen ? (isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")) : undefined}
+                className="flex items-center gap-3 px-3 py-2.5 mt-1 rounded-lg hover:bg-gray-200 transition-colors w-full text-left overflow-hidden"
               >
                 {isHistoryExpanded ? (
                   <ChevronUp className="w-4 h-4 text-gray-400 shrink-0" />
                 ) : (
                   <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
                 )}
-                {showLabels && (
-                  <span className="text-gray-500 text-sm font-medium">
-                    {isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")}
-                  </span>
-                )}
+                <span
+                  className={`text-gray-500 text-sm font-medium whitespace-nowrap transition-opacity duration-200 ${
+                    isOpen ? 'opacity-100' : 'opacity-0'
+                  }`}
+                >
+                  {isHistoryExpanded ? t("sidebar.collapse") : t("sidebar.expand")}
+                </span>
               </button>
             )}
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
     </>
   );
 }
