@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { getSessionDetails } from '@/lib/services/historyService';
 
 export async function GET(
   request: NextRequest,
@@ -14,16 +15,15 @@ export async function GET(
       );
     }
 
-    const EXPRESS_API_URL = process.env.EXPRESS_API_URL || 'http://localhost:5001';
-    const res = await fetch(`${EXPRESS_API_URL}/api/prompts/history/detail/${sessionId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const sessionDetails = await getSessionDetails(sessionId);
+    if (!sessionDetails) {
+      return NextResponse.json(
+        { success: false, error: 'Session not found' },
+        { status: 404 }
+      );
+    }
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, data: sessionDetails });
   } catch (error) {
     console.error('History Detail API Route Error:', error);
     return NextResponse.json(
