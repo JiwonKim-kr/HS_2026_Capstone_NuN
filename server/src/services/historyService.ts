@@ -72,3 +72,17 @@ export const getSessionDetails = async (sessionId: string) => {
     candidates
   };
 };
+
+export const deleteSession = async (sessionId: string) => {
+  const { error } = await supabase
+    .from('prompt_logs')
+    .delete()
+    .eq('session_id', sessionId);
+
+  if (error) {
+    console.error('Error deleting session:', error);
+    throw new Error('히스토리 삭제에 실패했습니다.');
+  }
+
+  return { success: true };
+};
