@@ -4,10 +4,13 @@ import { useState } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { DraftEditor } from "@/components/prompt/DraftEditor";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { PromptCandidateType } from "@/schemas/promptSchema";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export default function Home() {
+  const { user } = useAuth();
+  const { t } = useTranslation();
   const [view, setView] = useState<'draft' | 'analysis'>('draft');
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
@@ -66,6 +69,7 @@ export default function Home() {
         </div>
       ) : (
         <AnalysisResult
+          userId={user?.id ?? ""}
           originalPrompt={submittedPrompt}
           candidates={candidates}
           loading={analysisLoading}
