@@ -85,6 +85,15 @@ export const translations = {
     "analysis.loading.6": "최적의 구조를 찾는 중...",
     "analysis.sync_wait": "데이터를 서버와 동기화 중입니다. 잠시 후 다시 시도해 주세요.",
     "analysis.feedback_fail": "피드백 반영에 실패했습니다.",
+    "analysis.error.limit_title": "오늘은 너무 많이 생각했어요.",
+    "analysis.error.limit_desc": "내일 다시 만나요!",
+    "analysis.error.server_title": "서버에 문제가 있어요.",
+    "analysis.error.server_desc": "잠시 후 다시 시도해 주세요.",
+    "analysis.error.input_title": "입력 내용을 확인해 주세요.",
+    "analysis.error.input_desc": "다시 입력한 후 시도해 주세요.",
+    "analysis.error.generic_title": "오류가 발생했습니다.",
+    "analysis.error.generic_desc": "잠시 후 다시 시도해 주세요.",
+    "analysis.error.retry": "다시 시도",
 
     // Optimization Result (after selection)
     "optimization.selected": "선택 완료",
@@ -272,6 +281,15 @@ export const translations = {
     "analysis.loading.6": "Finding the optimal structure...",
     "analysis.sync_wait": "Syncing data with the server. Please try again in a moment.",
     "analysis.feedback_fail": "Failed to apply feedback.",
+    "analysis.error.limit_title": "You've thought a lot today.",
+    "analysis.error.limit_desc": "See you tomorrow!",
+    "analysis.error.server_title": "Something went wrong on our end.",
+    "analysis.error.server_desc": "Please try again in a moment.",
+    "analysis.error.input_title": "Please check your input.",
+    "analysis.error.input_desc": "Review your input and try again.",
+    "analysis.error.generic_title": "An error occurred.",
+    "analysis.error.generic_desc": "Please try again in a moment.",
+    "analysis.error.retry": "Try Again",
 
     // Optimization Result (after selection)
     "optimization.selected": "Selection Complete",
