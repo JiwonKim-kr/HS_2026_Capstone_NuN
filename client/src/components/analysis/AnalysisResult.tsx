@@ -1,10 +1,55 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Edit2, Copy, Check, ThumbsUp, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { Sparkles, Edit2, Copy, Check, ThumbsUp, ChevronLeft, ChevronRight, RotateCcw, Moon, AlertTriangle, AlertCircle, type LucideIcon } from "lucide-react";
 import { PromptCandidateType } from "@/schemas/promptSchema";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { TranslationKey } from "@/lib/i18n/translations";
+
+type ErrorConfig = {
+  titleKey: TranslationKey;
+  descKey: TranslationKey;
+  icon: LucideIcon;
+  iconColor: string;
+  bgColor: string;
+  borderColor: string;
+};
+
+const ERROR_CONFIG: Record<string, ErrorConfig> = {
+  DAILY_LIMIT_EXCEEDED: {
+    titleKey: 'analysis.error.limit_title',
+    descKey: 'analysis.error.limit_desc',
+    icon: Moon,
+    iconColor: 'text-[#5b4fcf]',
+    bgColor: 'bg-[#f3f0ff]',
+    borderColor: 'border-[#c4b5fd]',
+  },
+  AI_SERVICE_ERROR: {
+    titleKey: 'analysis.error.server_title',
+    descKey: 'analysis.error.server_desc',
+    icon: AlertTriangle,
+    iconColor: 'text-[#b45309]',
+    bgColor: 'bg-[#fffbeb]',
+    borderColor: 'border-[#fcd34d]',
+  },
+  INVALID_INPUT: {
+    titleKey: 'analysis.error.input_title',
+    descKey: 'analysis.error.input_desc',
+    icon: AlertCircle,
+    iconColor: 'text-[#ba1a1a]',
+    bgColor: 'bg-[#fff5f5]',
+    borderColor: 'border-[#fca5a5]',
+  },
+};
+
+const DEFAULT_ERROR_CONFIG: ErrorConfig = {
+  titleKey: 'analysis.error.generic_title',
+  descKey: 'analysis.error.generic_desc',
+  icon: AlertCircle,
+  iconColor: 'text-[#ba1a1a]',
+  bgColor: 'bg-[#fff5f5]',
+  borderColor: 'border-[#fca5a5]',
+};
 
 const LOADING_MESSAGE_KEYS: TranslationKey[] = [
   "analysis.loading.1",
@@ -19,7 +64,7 @@ interface AnalysisResultProps {
   originalPrompt: string;
   candidates: PromptCandidateType[];
   loading: boolean;
-  error: string | null;
+  error: { code: string; message: string } | null;
   onRestart: () => void;
 }
 
@@ -149,9 +194,27 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
           </p>
         </div>
       ) : error ? (
-        <div className="w-full flex items-center justify-center h-[540px]">
-          <p className="text-[#ba1a1a] text-[16px]">{error}</p>
-        </div>
+        (() => {
+          const config = ERROR_CONFIG[error.code] ?? DEFAULT_ERROR_CONFIG;
+          const Icon = config.icon;
+          return (
+            <div className="w-full flex items-center justify-center h-[540px]">
+              <div className={`flex flex-col items-center gap-4 p-10 rounded-2xl border ${config.bgColor} ${config.borderColor} max-w-sm w-full text-center`}>
+                <Icon className={`w-12 h-12 ${config.iconColor}`} />
+                <div>
+                  <p className="text-[18px] font-semibold text-[#191c1e] mb-1">{t(config.titleKey)}</p>
+                  <p className="text-[14px] text-[#757684]">{t(config.descKey)}</p>
+                </div>
+                <button
+                  onClick={onRestart}
+                  className="mt-2 px-6 py-2.5 rounded-full bg-white border border-gray-200 text-[#454652] text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                >
+                  {t('analysis.error.retry')}
+                </button>
+              </div>
+            </div>
+          );
+        })()
       ) : (
         <>
           {/* Candidate Card 3D Carousel Wrapper */}

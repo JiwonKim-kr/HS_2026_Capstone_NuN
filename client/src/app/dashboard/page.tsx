@@ -13,7 +13,7 @@ export default function Home() {
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
   const [analysisLoading, setAnalysisLoading] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<{ code: string; message: string } | null>(null);
 
   const handlePromptSubmit = async (text: string) => {
     setSubmittedPrompt(text);
@@ -29,11 +29,18 @@ export default function Home() {
         body: JSON.stringify({ originalInput: text }),
       });
       const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || '생성 실패');
+      if (!res.ok || !json.success) {
+        const e = json.error;
+        setAnalysisError({
+          code: (e && typeof e === 'object' ? e.code : null) ?? 'UNKNOWN',
+          message: (e && typeof e === 'object' ? e.message : e) ?? '생성 실패',
+        });
+        return;
+      }
       setCandidates(json.data.candidates);
       window.dispatchEvent(new Event('prompt-generated'));
     } catch (err: any) {
-      setAnalysisError(err.message);
+      setAnalysisError({ code: 'NETWORK_ERROR', message: err.message ?? '네트워크 오류가 발생했습니다.' });
     } finally {
       setAnalysisLoading(false);
     }
