@@ -16,8 +16,8 @@ app.post('/mcp', async (req, res) => {
     }
 
     const server = createMcpServer(userId);
-    // @modelcontextprotocol/sdk 1.x version requires a specific signature or no arguments for sessionIdGenerator
-    const transport = new StreamableHTTPServerTransport();
+    // @modelcontextprotocol/sdk 1.x version requires a specific signature or no arguments
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     
     await server.connect(transport);
     await transport.handleRequest(req, res, req.body);
