@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Globe, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Language } from "@/lib/i18n/translations";
+import { McpApiKeysSection } from "./McpApiKeysSection";
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useTranslation();
@@ -82,6 +83,9 @@ export default function SettingsPage() {
             </div>
           </div>
         </section>
+
+        {/* Section 2.5: MCP API Keys */}
+        <McpApiKeysSection />
 
         {/* Section 3: Account Deletion */}
         <section className="bg-[rgba(255,218,214,0.1)] border border-[rgba(255,218,214,0.2)] p-[32px] rounded-[12px] flex items-start gap-[16px] w-full transition-colors hover:bg-[rgba(255,218,214,0.15)]">
