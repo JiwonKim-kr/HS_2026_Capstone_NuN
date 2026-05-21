@@ -26,8 +26,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, data: result });
   } catch (err: any) {
     console.error('[Feedback] Error:', err);
+    if (err.message === 'FORBIDDEN') {
+      return NextResponse.json({ success: false, error: '접근 권한이 없습니다.' }, { status: 403 });
+    }
     return NextResponse.json(
-      { success: false, error: err.message || '서버 오류' },
+      { success: false, error: '서버 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

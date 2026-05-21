@@ -3,9 +3,9 @@ import { z } from 'zod';
 // 프론트엔드에서 API로 보내는 프롬프트 생성 요청 데이터 스키마 (API 명세서 기준)
 export const generatePromptRequestSchema = z.object({
   userId: z.string().uuid('유효한 사용자 ID가 필요합니다.').describe('사용자 고유 UUID'),
-  originalInput: z.string().min(1, '초안 내용을 입력해주세요.').describe('사용자가 입력한 초안 내용'),
+  originalInput: z.string().min(1, '초안 내용을 입력해주세요.').max(1000, '최대 1000자까지 입력 가능합니다.').describe('사용자가 입력한 초안 내용'),
   context: z.object({
-    domain: z.string().optional().describe('업무, 창작 등 목적'),
+    domain: z.string().max(100).optional().describe('업무, 창작 등 목적'),
   }).optional(),
 });
 

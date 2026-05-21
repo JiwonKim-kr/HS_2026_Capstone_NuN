@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
     console.error('[generate] Error:', err);
     return NextResponse.json(
-      { success: false, error: { code: 'AI_SERVICE_ERROR', message: '프롬프트 생성 중 내부 서버 오류가 발생했습니다.', details: err instanceof Error ? err.message : String(err) } },
+      { success: false, error: { code: 'AI_SERVICE_ERROR', message: '프롬프트 생성 중 내부 서버 오류가 발생했습니다.' } },
       { status: 500 }
     );
   }

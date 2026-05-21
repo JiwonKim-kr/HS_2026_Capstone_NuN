@@ -29,11 +29,12 @@ export const processFeedback = async (params: {
     .from('prompt_logs')
     .select('is_weight_applied')
     .eq('id', params.historyId)
+    .eq('user_id', params.userId)
     .single();
 
-  if (logError) {
+  if (logError || !logData) {
     console.error('Error fetching prompt_log:', logError);
-    throw new Error('Failed to verify feedback status');
+    throw new Error('FORBIDDEN');
   }
 
   const shouldApplyWeight = params.targetLikeStatus && !logData.is_weight_applied;
@@ -47,7 +48,8 @@ export const processFeedback = async (params: {
   const { error: updateError } = await supabase
     .from('prompt_logs')
     .update(updatePayload)
-    .eq('id', params.historyId);
+    .eq('id', params.historyId)
+    .eq('user_id', params.userId);
 
   if (updateError) {
     console.error('Error updating prompt_logs:', updateError);
