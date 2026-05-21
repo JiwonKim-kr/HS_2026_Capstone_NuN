@@ -3,12 +3,29 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { createMcpServer } from './mcpHandler.js';
 import { verifyApiKey } from './auth/verifyApiKey.js';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 dotenv.config();
 
 const app = express();
-app.use(express.json());
 
-app.post('/mcp', async (req, res) => {
+app.use(helmet());
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS?.split(',') ?? [],
+  methods: ['POST'],
+}));
+app.use(express.json({ limit: '64kb' }));
+
+const mcpLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests' },
+});
+
+app.post('/mcp', mcpLimiter, async (req, res) => {
   try {
     const userId = await verifyApiKey(req.headers['authorization'] ?? '');
     if (!userId) {
