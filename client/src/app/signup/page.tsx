@@ -60,6 +60,15 @@ export default function SignupPage() {
     }
   }, [password, confirmPassword]);
 
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -272,15 +281,13 @@ export default function SignupPage() {
               </span>
             </div>
 
-            {/* Google 소셜 버튼 (추후 구현 예정 — 현재 비활성) */}
+            {/* Google 소셜 버튼 */}
             <button
               type="button"
-              disabled
-              title="추후 지원 예정"
+              onClick={handleGoogleLogin}
               className="w-full h-[48px] border border-[#c5c5d4] rounded-[8px]
                          flex items-center justify-center gap-2
-                         opacity-50 cursor-not-allowed
-                         transition-colors duration-150"
+                         hover:bg-[#f2f4f6] transition-colors duration-150"
             >
               {/* Google 아이콘 (SVG inline) */}
               <svg

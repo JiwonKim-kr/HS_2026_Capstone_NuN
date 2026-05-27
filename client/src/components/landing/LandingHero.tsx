@@ -13,6 +13,15 @@ export function LandingHero() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -126,7 +135,7 @@ export function LandingHero() {
             </form>
 
             <div className="border-t border-[#eceef0] pt-[33px] flex flex-col gap-[16px] w-full">
-              <button type="button" className="bg-[#f2f4f6] flex items-center justify-center py-[12px] gap-[12px] rounded-[8px] hover:bg-[#e9ecef] transition-colors w-full">
+              <button type="button" onClick={handleGoogleLogin} className="bg-[#f2f4f6] flex items-center justify-center py-[12px] gap-[12px] rounded-[8px] hover:bg-[#e9ecef] transition-colors w-full">
                 <span className="font-['Actor'] text-[24px] text-[#191c1e] leading-[24px]">google</span>
                 <span className="font-medium text-[16px] text-[#191c1e] leading-[24px]">{t("landing.google_login")}</span>
               </button>
