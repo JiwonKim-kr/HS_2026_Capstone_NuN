@@ -3,10 +3,14 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Globe } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { t, language, setLanguage } = useTranslation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,51 +25,55 @@ export default function SignupPage() {
   const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
+  const toggleLanguage = () => {
+    setLanguage(language === "ko" ? "en" : "ko");
+  };
+
   useEffect(() => {
     if (phone) {
       const phoneRegex = /^\d+$/;
-      if (!phoneRegex.test(phone)) setPhoneError("전화번호는 숫자만 입력해야 합니다.");
+      if (!phoneRegex.test(phone)) setPhoneError(t("signup.phone.error"));
       else setPhoneError(null);
     } else {
       setPhoneError(null);
     }
-  }, [phone]);
+  }, [phone, language]);
 
   useEffect(() => {
     if (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) setEmailError("올바른 이메일(도메인) 형식이어야 합니다.");
+      if (!emailRegex.test(email)) setEmailError(t("signup.email.error"));
       else setEmailError(null);
     } else {
       setEmailError(null);
     }
-  }, [email]);
+  }, [email, language]);
 
   useEffect(() => {
     if (password) {
       const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-      if (!passwordRegex.test(password)) setPasswordError("8자 이상의 영문, 숫자, 특수문자 조합이어야 합니다.");
+      if (!passwordRegex.test(password)) setPasswordError(t("signup.password.error"));
       else setPasswordError(null);
     } else {
       setPasswordError(null);
     }
-  }, [password]);
+  }, [password, language]);
 
   useEffect(() => {
     if (confirmPassword) {
-      if (password !== confirmPassword) setConfirmPasswordError("비밀번호가 일치하지 않습니다.");
+      if (password !== confirmPassword) setConfirmPasswordError(t("signup.confirm_password.error"));
       else setConfirmPasswordError(null);
     } else {
       setConfirmPasswordError(null);
     }
-  }, [password, confirmPassword]);
+  }, [password, confirmPassword, language]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!email || !password || !confirmPassword || !phone || emailError || passwordError || confirmPasswordError || phoneError) {
-      setError("모든 필드를 올바르게 입력해주세요.");
+      setError(t("signup.fields_error"));
       return;
     }
 
@@ -81,7 +89,7 @@ export default function SignupPage() {
 
     if (error) {
       setError(error.message === "User already registered"
-        ? "이미 가입된 이메일입니다. 로그인 페이지로 이동해 주세요."
+        ? t("signup.already_registered")
         : error.message);
       setLoading(false);
       return;
@@ -103,6 +111,15 @@ export default function SignupPage() {
         <Link href="/" className="font-manrope font-bold text-[20px] leading-[28px] tracking-[-1px] text-[#191c1e]">
           Prompt-U
         </Link>
+
+        {/* 언어 전환 버튼 */}
+        <button
+          onClick={toggleLanguage}
+          className="flex items-center justify-center p-2 rounded-full hover:bg-black/5 transition-colors"
+          title={language === "ko" ? "Switch to English" : "한국어로 변경"}
+        >
+          <Globe className="w-5 h-5 text-[#454652]" />
+        </button>
       </header>
 
       {/* 메인 컨텐츠 */}
@@ -112,10 +129,10 @@ export default function SignupPage() {
           {/* 헤더 텍스트 */}
           <div className="flex flex-col gap-3 w-full">
             <h1 className="text-[36px] leading-[40px] tracking-[-0.9px] text-[#191c1e] font-normal">
-              계정 만들기
+              {t("signup.title")}
             </h1>
             <p className="text-[16px] leading-[26px] text-[#454652] font-normal">
-              Prompt-U와 함께 당신만의 프롬프팅을 시작하세요.
+              {t("signup.subtitle")}
             </p>
           </div>
 
@@ -135,14 +152,14 @@ export default function SignupPage() {
                 htmlFor="email"
                 className="text-[14px] leading-[20px] font-semibold text-[#454652]"
               >
-                이메일 주소 (아이디)
+                {t("signup.email")}
               </label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
+                placeholder={t("signup.email.placeholder")}
                 autoComplete="email"
                 className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${emailError ? "border border-[#ba1a1a]" : ""}`}
               />
@@ -155,7 +172,7 @@ export default function SignupPage() {
                 htmlFor="password"
                 className="text-[14px] leading-[20px] font-normal text-[#454652]"
               >
-                비밀번호
+                {t("signup.password")}
               </label>
               <div className="relative w-full">
                 <input
@@ -163,7 +180,7 @@ export default function SignupPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="8자 이상의 영문, 숫자, 특수문자 조합"
+                  placeholder={t("signup.password.placeholder")}
                   autoComplete="new-password"
                   className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${passwordError ? "border border-[#ba1a1a]" : ""}`}
                 />
@@ -171,7 +188,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-[#757684] hover:text-[#454652] transition-colors"
-                  aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+                  aria-label={showPassword ? t("signup.password.hide") : t("signup.password.show")}
                 >
                   {showPassword ? (
                     // eye-off icon
@@ -198,7 +215,7 @@ export default function SignupPage() {
                 htmlFor="confirmPassword"
                 className="text-[14px] leading-[20px] font-normal text-[#454652]"
               >
-                비밀번호 확인
+                {t("signup.confirm_password")}
               </label>
               <div className="relative w-full">
                 <input
@@ -206,7 +223,7 @@ export default function SignupPage() {
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="비밀번호를 다시 입력해주세요"
+                  placeholder={t("signup.confirm_password.placeholder")}
                   autoComplete="new-password"
                   className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] pr-[44px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${confirmPasswordError ? "border border-[#ba1a1a]" : ""}`}
                 />
@@ -214,7 +231,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => setShowConfirmPassword((v) => !v)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-[#757684] hover:text-[#454652] transition-colors"
-                  aria-label={showConfirmPassword ? "비밀번호 확인 숨기기" : "비밀번호 확인 보기"}
+                  aria-label={showConfirmPassword ? t("signup.confirm_password.hide") : t("signup.confirm_password.show")}
                 >
                   {showConfirmPassword ? (
                     // eye-off icon
@@ -241,14 +258,14 @@ export default function SignupPage() {
                 htmlFor="phone"
                 className="text-[14px] leading-[20px] font-normal text-[#454652]"
               >
-                전화번호
+                {t("signup.phone")}
               </label>
               <input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="01012345678 (숫자만 입력)"
+                placeholder={t("signup.phone.placeholder")}
                 autoComplete="tel"
                 className={`w-full h-[48px] bg-[#e0e3e5] rounded-[8px] px-4 py-[14px] text-[16px] leading-normal text-[#191c1e] font-normal placeholder:text-[rgba(117,118,132,0.6)] focus:outline-none focus:ring-2 focus:ring-[#003e93]/40 focus:bg-white transition-colors duration-150 ${phoneError ? "border border-[#ba1a1a]" : ""}`}
               />
@@ -261,14 +278,14 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full h-[56px] bg-[#3f51b5] hover:bg-[#3949a3] active:bg-[#303f9f] disabled:opacity-60 disabled:cursor-not-allowed rounded-[8px] shadow-[0px_1px_1px_rgba(0,0,0,0.05)] flex items-center justify-center text-white text-[18px] leading-[28px] font-normal transition-colors duration-150 cursor-pointer"
             >
-              {loading ? "가입 처리 중..." : "회원가입 완료"}
+              {loading ? t("signup.submitting") : t("signup.submit")}
             </button>
 
             {/* 소셜 로그인 구분선 */}
             <div className="relative flex items-center justify-center py-4 w-full">
               <div className="absolute inset-x-0 top-1/2 border-t border-[rgba(197,197,212,0.3)]" />
               <span className="relative bg-[#f8f9fb] px-2 text-[12px] leading-[16px] uppercase text-[#757684]">
-                또는 소셜 계정으로 시작
+                {t("signup.social_divider")}
               </span>
             </div>
 
@@ -308,15 +325,15 @@ export default function SignupPage() {
                 />
               </svg>
               <span className="text-[14px] leading-[20px] font-semibold text-[#191c1e]">
-                Google 계정으로 시작하기
+                {t("signup.google")}
               </span>
             </button>
 
             {/* 로그인 링크 */}
             <p className="text-center text-[14px] leading-[20px] text-[#757684]">
-              이미 계정이 있으신가요?{" "}
+              {t("signup.already_account")}{" "}
               <Link href="/" className="text-[#3f51b5] font-semibold hover:underline">
-                로그인
+                {t("signup.login")}
               </Link>
             </p>
           </form>

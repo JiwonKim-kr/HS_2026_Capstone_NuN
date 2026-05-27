@@ -10,19 +10,21 @@ import { SelectableCard } from "@/components/ui/SelectableCard";
 import { ActionFooter } from "@/components/onboarding/ActionFooter";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Form State
+  // Form State — DB에 저장되는 value는 언어에 무관하게 영문 키로 유지
   const [age, setAge] = useState<string>("");
   const [gender, setGender] = useState<string>("");
   const [job, setJob] = useState<string>("");
   
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>([]);
-  const [selectedStyle, setSelectedStyle] = useState<string>("핵심만 간결하게");
+  const [selectedStyle, setSelectedStyle] = useState<string>("concise");
 
   const handleNextStep = async () => {
     if (currentStep === 1) {
@@ -63,25 +65,26 @@ export default function OnboardingPage() {
     );
   };
 
+  // 번역된 라벨로 옵션 구성 (value는 영문 고정 → DB 저장 일관성 유지)
   const genderOptions = [
-    { label: "남성", value: "남성" },
-    { label: "여성", value: "여성" },
-    { label: "선택안함", value: "선택안함" },
+    { label: t("onboarding.gender.male"), value: "male" },
+    { label: t("onboarding.gender.female"), value: "female" },
+    { label: t("onboarding.gender.none"), value: "none" },
   ];
 
   const purposeOptions = [
-    { label: "업무/기획", value: "업무/기획", iconSrc: "/icons/work.svg" },
-    { label: "학업/연구", value: "학업/연구", iconSrc: "/icons/study.svg" },
-    { label: "디자인/예술", value: "디자인/예술", iconSrc: "/icons/design.svg" },
-    { label: "IT/개발", value: "IT/개발", iconSrc: "/icons/it.svg" },
-    { label: "상담/심리", value: "상담/심리", iconSrc: "/icons/counseling.svg" },
-    { label: "일반/기타", value: "일반/기타", iconSrc: "/icons/etc.svg" },
+    { label: t("onboarding.purpose.work"), value: "work", iconSrc: "/icons/work.svg" },
+    { label: t("onboarding.purpose.study"), value: "study", iconSrc: "/icons/study.svg" },
+    { label: t("onboarding.purpose.design"), value: "design", iconSrc: "/icons/design.svg" },
+    { label: t("onboarding.purpose.it"), value: "it", iconSrc: "/icons/it.svg" },
+    { label: t("onboarding.purpose.counseling"), value: "counseling", iconSrc: "/icons/counseling.svg" },
+    { label: t("onboarding.purpose.general"), value: "general", iconSrc: "/icons/etc.svg" },
   ];
 
   const styleOptions = [
-    { label: "핵심만 간결하게", value: "핵심만 간결하게", iconSrc: "/icons/target.svg" },
-    { label: "균형있는 설명", value: "균형있는 설명", iconSrc: "/icons/balance.svg" },
-    { label: "아주 디테일하게", value: "아주 디테일하게", iconSrc: "/icons/detail.svg" },
+    { label: t("onboarding.style.concise"), value: "concise", iconSrc: "/icons/target.svg" },
+    { label: t("onboarding.style.balanced"), value: "balanced", iconSrc: "/icons/balance.svg" },
+    { label: t("onboarding.style.detailed"), value: "detailed", iconSrc: "/icons/detail.svg" },
   ];
 
   return (
@@ -89,11 +92,11 @@ export default function OnboardingPage() {
       {currentStep === 1 ? (
         <div className="flex flex-col gap-[40px] w-full">
           {/* Step 1: 기본 정보 */}
-          <FormSection label="개인 식별" heading="기본 정보">
+          <FormSection label={t("onboarding.section.personal")} heading={t("onboarding.section.basic")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-[16px] sm:gap-[32px] w-full mt-[8px]">
               {/* 연령 */}
               <div className="flex flex-col gap-[8.5px]">
-                <label className="text-[#454652] text-[14px]">연령</label>
+                <label className="text-[#454652] text-[14px]">{t("onboarding.age")}</label>
                 <div className="bg-[#f2f4f6] h-[48px] rounded-[8px] flex items-center px-[12px] w-full border-2 border-transparent focus-within:border-[#003e93] transition-colors">
                   <input
                     type="number"
@@ -110,7 +113,7 @@ export default function OnboardingPage() {
               </div>
               {/* 성별 */}
               <div className="flex flex-col gap-[8.5px]">
-                <label className="text-[#454652] text-[14px]">성별</label>
+                <label className="text-[#454652] text-[14px]">{t("onboarding.gender")}</label>
                 <ToggleGroup 
                   options={genderOptions}
                   selectedValue={gender}
@@ -121,7 +124,7 @@ export default function OnboardingPage() {
           </FormSection>
 
           {/* Step 1: 커리어 맥락 */}
-          <FormSection label="커리어 맥락" heading="현재 어떤 일을 하시나요?">
+          <FormSection label={t("onboarding.section.career")} heading={t("onboarding.section.career.q")}>
             <div className="mt-[8px] relative w-full">
               <div className="bg-[#f2f4f6] h-[48px] rounded-[8px] flex items-center px-[16px] relative w-full focus-within:border-[#003e93] border-2 border-transparent transition-colors">
                 <select
@@ -129,13 +132,13 @@ export default function OnboardingPage() {
                   onChange={(e) => setJob(e.target.value)}
                   className="bg-transparent border-none outline-none text-[16px] text-[#191c1e] w-full appearance-none cursor-pointer"
                 >
-                  <option value="" disabled>직업군 선택</option>
-                  <option value="학생">학생</option>
-                  <option value="개발자">개발자</option>
-                  <option value="디자이너">디자이너</option>
-                  <option value="기획자">기획자</option>
-                  <option value="마케터">마케터</option>
-                  <option value="기타">기타</option>
+                  <option value="" disabled>{t("onboarding.job.placeholder")}</option>
+                  <option value="student">{t("onboarding.job.student")}</option>
+                  <option value="developer">{t("onboarding.job.developer")}</option>
+                  <option value="designer">{t("onboarding.job.designer")}</option>
+                  <option value="planner">{t("onboarding.job.planner")}</option>
+                  <option value="marketer">{t("onboarding.job.marketer")}</option>
+                  <option value="other">{t("onboarding.job.other")}</option>
                 </select>
                 <div className="absolute right-[16px] size-[24px] pointer-events-none">
                   <Image src="/icons/chevron-down.svg" alt="Dropdown" fill className="object-contain" />
@@ -152,7 +155,7 @@ export default function OnboardingPage() {
       ) : (
         <div className="flex flex-col gap-[40px] w-full">
           {/* Step 2: 주요 활용 목적 */}
-          <FormSection label="맞춤 설정" heading="주요 활용 목적">
+          <FormSection label={t("onboarding.section.customize")} heading={t("onboarding.section.purpose")}>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px] mt-[8px] w-full">
               {purposeOptions.map(option => (
                 <SelectableCard
@@ -168,7 +171,7 @@ export default function OnboardingPage() {
           </FormSection>
 
           {/* Step 2: 답변 스타일 */}
-          <FormSection label="" heading="답변 스타일">
+          <FormSection label="" heading={t("onboarding.section.style")}>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-[12px] mt-[8px] w-full">
               {styleOptions.map(option => (
                 <SelectableCard
@@ -185,6 +188,7 @@ export default function OnboardingPage() {
 
           <ActionFooter 
             onNext={handleNextStep}
+            isLastStep={true}
             disabled={selectedPurposes.length === 0}
           />
         </div>

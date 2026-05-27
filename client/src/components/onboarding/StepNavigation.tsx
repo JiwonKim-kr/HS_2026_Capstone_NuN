@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface StepNavigationProps {
   currentStep: number;
@@ -6,6 +9,8 @@ interface StepNavigationProps {
 }
 
 export function StepNavigation({ currentStep, onStepChange }: StepNavigationProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-[16px] w-full">
       {/* Step 1 */}
@@ -24,7 +29,7 @@ export function StepNavigation({ currentStep, onStepChange }: StepNavigationProp
         )}
         <div className="flex flex-col justify-center h-[20px]">
           <span className={`text-[14px] leading-[20px] ${currentStep === 1 ? 'text-[#191c1e]' : 'text-[#454652]'}`}>
-            기본 인적사항
+            {t("onboarding.step1.nav")}
           </span>
         </div>
       </button>
@@ -45,7 +50,7 @@ export function StepNavigation({ currentStep, onStepChange }: StepNavigationProp
         )}
         <div className="flex flex-col justify-center h-[20px]">
           <span className={`text-[14px] leading-[20px] ${currentStep === 2 ? 'text-[#191c1e]' : 'text-[#454652]'}`}>
-            주요 활용 목적
+            {t("onboarding.step2.nav")}
           </span>
         </div>
       </button>

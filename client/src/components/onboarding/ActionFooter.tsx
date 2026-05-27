@@ -1,20 +1,21 @@
+"use client";
+
 import Image from "next/image";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface ActionFooterProps {
   onNext: () => void;
   onSkip?: () => void;
-  nextLabel?: string;
+  isLastStep?: boolean;
   disabled?: boolean;
 }
 
-export function ActionFooter({ onNext, onSkip, nextLabel = "계속하기", disabled }: ActionFooterProps) {
+export function ActionFooter({ onNext, onSkip, isLastStep = false, disabled }: ActionFooterProps) {
+  const { t } = useTranslation();
+  const nextLabel = isLastStep ? t("onboarding.finish") : t("onboarding.next");
+
   return (
     <div className="flex items-center justify-between w-full pt-[24px] relative border-t border-t-transparent">
-      {/* We use flex layout to place buttons. The continues button is centrally aligned or explicitly offset in Figma but let's make it standard right/left or centered.
-          In the Figma context, "계속하기" was generally centered or rightward.
-          Wait, looking at Figma: "계속하기" is at left-[377.33px] within an 896px container? It's roughly in the center.
-          Let's place them neatly. Since the form width is grid-based, let's just center "계속하기" and put "건너뛰기" on the right if it exists. 
-      */}
       <div className="flex-1" /> {/* Spacer */}
       
       <div className="flex items-center justify-center gap-4">
@@ -39,7 +40,7 @@ export function ActionFooter({ onNext, onSkip, nextLabel = "계속하기", disab
             className="flex items-center justify-center px-[16px]"
           >
             <span className="text-[14px] text-[#757684] leading-[20px] hover:text-[#454652] transition-colors">
-              건너뛰기
+              {t("onboarding.skip")}
             </span>
           </button>
         )}

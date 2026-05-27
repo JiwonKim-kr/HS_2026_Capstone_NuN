@@ -1,5 +1,8 @@
+"use client";
+
 import { ReactNode } from "react";
 import { StepNavigation } from "./StepNavigation";
+import { useTranslation } from "@/lib/i18n/useTranslation";
 
 interface OnboardingLayoutProps {
   children: ReactNode;
@@ -8,15 +11,17 @@ interface OnboardingLayoutProps {
 }
 
 export function OnboardingLayout({ children, currentStep, onStepChange }: OnboardingLayoutProps) {
-  // Title text depends on step
-  const title = currentStep === 1 
-    ? "나만의 AI 프롬프터를\n만들어보세요." 
-    : "나만의 AI 선호 모델을\n만들어보세요.";
+  const { t } = useTranslation();
 
-  const headerText = `2단계 중 ${currentStep}단계`;
-  
+  // Title text depends on step
+  const title = currentStep === 1
+    ? t("onboarding.step1.title")
+    : t("onboarding.step2.title");
+
+  const headerText = t("onboarding.step_of").replace("{n}", String(currentStep));
+
   // Calculate width percentage based on step
-  const progressWidth = currentStep === 1 ? 25 : 75; // Step 1: 25%, Step 2: 75%  (Design showed 25% for both, but fixing it to be dynamic)
+  const progressWidth = currentStep === 1 ? 25 : 75;
 
   return (
     <div className="bg-[#f8f9fb] flex flex-col items-center relative size-full min-h-screen text-gray-900 font-sans">
@@ -53,7 +58,7 @@ export function OnboardingLayout({ children, currentStep, onStepChange }: Onboar
                   {title}
                 </h1>
                 <p className="text-[#454652] text-[14px] leading-[22.75px] hidden md:block">
-                  사용자 경험을 맞춤화하세요. 이 데이터는 사용자의 전문 분야에 맞춰 Prompt-U를 튜닝하는 데 사용됩니다.
+                  {t("onboarding.description")}
                 </p>
               </div>
               <StepNavigation currentStep={currentStep} onStepChange={onStepChange} />
