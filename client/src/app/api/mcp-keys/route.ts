@@ -14,7 +14,8 @@ export async function GET() {
     .order('created_at', { ascending: false });
 
   if (dbError) {
-    return NextResponse.json({ success: false, error: dbError.message }, { status: 500 });
+    console.error('[mcp-keys GET] DB error:', dbError);
+    return NextResponse.json({ success: false, error: '키 목록 조회 중 오류가 발생했습니다.' }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, data });
@@ -51,7 +52,8 @@ export async function POST(request: Request) {
     .single();
 
   if (insertError) {
-    return NextResponse.json({ success: false, error: insertError.message }, { status: 500 });
+    console.error('[mcp-keys POST] DB error:', insertError);
+    return NextResponse.json({ success: false, error: '키 생성 중 오류가 발생했습니다.' }, { status: 500 });
   }
 
   // 원본 키(rawKey)는 최초 생성 시 딱 한 번만 반환
