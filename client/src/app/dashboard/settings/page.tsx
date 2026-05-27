@@ -5,6 +5,7 @@ import { Globe, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Language } from "@/lib/i18n/translations";
 import { McpApiKeysSection } from "./McpApiKeysSection";
+import { privacyPolicy, PolicyParagraph } from "@/lib/legal/privacyPolicy";
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useTranslation();
@@ -58,28 +59,45 @@ export default function SettingsPage() {
             <div className="bg-[#dfe0ff] w-[40px] h-[40px] rounded-[8px] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-[20px] h-[20px] text-[#003e93]" />
             </div>
-            <h3 className="text-[#191c1e] text-[18px] leading-[28px]">{language === 'ko' ? '개인정보 처리방침' : 'Privacy Policy'}</h3>
+            <h3 className="text-[#191c1e] text-[18px] leading-[28px]">
+              {privacyPolicy[language].title}
+            </h3>
           </div>
 
           {/* 스크롤 가능한 처리방침 박스 */}
-          <div className="bg-[#f2f4f6] h-[160px] rounded-[8px] p-[24px] overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:bg-[#d1d5db] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-            <div className="flex flex-col gap-[22px] text-[#454652] text-[14px] leading-[22.75px]">
-              <p>
-                Intelligence Layer는 사용자의 개인정보 보호를 최우선으로 생각합니다. 당사는 서비스 제공을 위해 필요한 최소한의 데이터만을 수집하며, 모든 데이터는 최신 암호화 표준을 통해 안전하게 관리됩니다.
-              </p>
-              <div>
-                <p>1. 수집하는 개인정보 항목: 이메일, 회사 정보, 서비스 이용 기록.</p>
-                <p>2. 수집 목적: 맞춤형 AI 큐레이션 서비스 제공 및 사용자 인증.</p>
-                <p>3. 보유 기간: 회원 탈퇴 시 혹은 법적 보관 의무 기간 종료 시까지.</p>
-              </div>
-              <p>상세한 내용은 '전문 보기' 링크를 통해 확인하실 수 있습니다.</p>
+          <div className="bg-[#f2f4f6] h-[320px] rounded-[8px] p-[24px] overflow-y-auto [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:bg-[#d1d5db] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
+            <div className="flex flex-col gap-[20px] text-[#454652] text-[14px] leading-[22px]">
 
-              {/* 스크롤 확인용 더미 데이터 반복 */}
-              <div className="h-[1px] bg-slate-300 w-full my-4" />
-              <p className="text-gray-400 italic">(이하 스크롤 확인용 더미 텍스트)</p>
-              <p>
-                당사는 개인정보보호법 및 관련 법령을 철저히 준수합니다. 본 방침은 추가적인 서비스를 적용할 때 언제든 수정될 수 있으며, 수정 시에는 공지사항을 통해 사전 안내해 드립니다. 사용자의 권익 보호를 위해 투명하고 공정한 데이터 활용 원칙을 마련하고 있습니다.
+              {/* 시행일 */}
+              <p className="text-[12px] text-[#757684]">
+                {privacyPolicy[language].effectiveDate}
               </p>
+
+              {/* 서두 */}
+              <p>{privacyPolicy[language].intro}</p>
+
+              {/* 조항별 렌더링 */}
+              {privacyPolicy[language].sections.map((section, i) => (
+                <div key={i} className="flex flex-col gap-[8px]">
+                  <h4 className="text-[#191c1e] text-[13px] font-semibold leading-[20px]">
+                    {section.title}
+                  </h4>
+                  {section.content.map((block: PolicyParagraph, j) =>
+                    block.type === 'text' ? (
+                      <p key={j}>{block.text}</p>
+                    ) : (
+                      <ul key={j} className="flex flex-col gap-[4px] pl-[4px]">
+                        {block.items.map((item, k) => (
+                          <li key={k} className="flex gap-[8px]">
+                            <span className="text-[#003e93] shrink-0">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </section>
