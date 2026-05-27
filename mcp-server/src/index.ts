@@ -1,4 +1,5 @@
 import express from 'express';
+import helmet from 'helmet';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcpServer } from './mcpHandler.js';
 import { verifyApiKey } from './auth/verifyApiKey.js';
@@ -6,7 +7,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-app.use(express.json());
+
+// 보안 헤더 (X-Frame-Options, X-Content-Type-Options, HSTS 등)
+app.use(helmet());
+
+// 요청 body 크기 1 MB로 제한 (대용량 payload 공격 방어)
+app.use(express.json({ limit: '1mb' }));
 
 app.post('/mcp', async (req, res) => {
   try {
