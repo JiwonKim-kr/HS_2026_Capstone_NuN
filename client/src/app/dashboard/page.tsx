@@ -6,9 +6,11 @@ import { DraftEditor } from "@/components/prompt/DraftEditor";
 import { AnalysisResult } from "@/components/analysis/AnalysisResult";
 import { PromptCandidateType } from "@/schemas/promptSchema";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { useLanguageContext } from "@/lib/i18n/LanguageProvider";
 
 export default function Home() {
   const { t } = useTranslation();
+  const { language } = useLanguageContext();
   const [view, setView] = useState<'draft' | 'analysis'>('draft');
   const [submittedPrompt, setSubmittedPrompt] = useState("");
   const [candidates, setCandidates] = useState<PromptCandidateType[]>([]);
@@ -26,7 +28,7 @@ export default function Home() {
       const res = await fetch('/api/prompts/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ originalInput: text }),
+        body: JSON.stringify({ originalInput: text, language }),
       });
       const json = await res.json();
       if (!res.ok || !json.success) {
