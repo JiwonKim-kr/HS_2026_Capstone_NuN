@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const generatePromptRequestSchema = z.object({
   userId: z.string().uuid('유효한 사용자 ID가 필요합니다.').describe('사용자 고유 UUID'),
   originalInput: z.string().min(1, '초안 내용을 입력해주세요.').describe('사용자가 입력한 초안 내용'),
+  language: z.enum(['ko', 'en']).optional().default('ko').describe('사용자 인터페이스 언어 (ko: 한국어, en: 영어)'),
   context: z.object({
     domain: z.string().optional().describe('업무, 창작 등 목적'),
   }).optional(),
