@@ -23,36 +23,75 @@ const MAX_TIER = TIER_THRESHOLDS[TIER_THRESHOLDS.length - 1].tier;
 
 type SnippetMap = Record<number, string>;
 
-const TONE_SNIPPETS: SnippetMap = {
-  1: '- [어투]: 감정과 수식어를 완전히 배제하고, 가장 건조하고 객관적인 문체(하다체)로 작성할 것.',
-  2: '- [어투]: 감정 표현을 자제하고, 정중하고 격식 있는 비즈니스 톤(하십시오체)을 유지할 것.',
-  3: '',
-  4: '- [어투]: 친근하고 대화하는 듯한 부드러운 어투를 사용하며, 가벼운 감정 표현이나 공감을 포함할 것.',
-  5: '- [어투]: 매우 유머러스하고 재치 있는 어투를 사용하며, 상황에 맞는 이모지와 밈(Meme)을 적극적으로 활용할 것.',
+// ── 언어별 스니펫 맵 ──────────────────────────────────────────────────────────
+type LangSnippetMap = { ko: SnippetMap; en: SnippetMap };
+
+const TONE_SNIPPETS: LangSnippetMap = {
+  ko: {
+    1: '- [어투]: 감정과 수식어를 완전히 배제하고, 가장 건조하고 객관적인 문체(하다체)로 작성할 것.',
+    2: '- [어투]: 감정 표현을 자제하고, 정중하고 격식 있는 비즈니스 톤(하십시오체)을 유지할 것.',
+    3: '',
+    4: '- [어투]: 친근하고 대화하는 듯한 부드러운 어투를 사용하며, 가벼운 감정 표현이나 공감을 포함할 것.',
+    5: '- [어투]: 매우 유머러스하고 재치 있는 어투를 사용하며, 상황에 맞는 이모지와 밈(Meme)을 적극적으로 활용할 것.',
+  },
+  en: {
+    1: '- [Tone]: Write in the driest, most objective, and purely factual style possible. Omit all emotion and embellishment.',
+    2: '- [Tone]: Keep a formal, polished business tone. Minimize emotional expression.',
+    3: '',
+    4: '- [Tone]: Use a friendly, conversational, and warm tone. Light emotional expression and empathy are encouraged.',
+    5: '- [Tone]: Be highly humorous and witty. Actively incorporate relevant emojis and memes where appropriate.',
+  },
 };
 
-const LEVEL_SNIPPETS: SnippetMap = {
-  1: '- [어휘 수준]: 타겟 독자는 해당 지식이 전혀 없는 초보자입니다. 전문 용어를 철저히 배제하고 상위 1,000개 이내의 쉬운 일상 단어로만 설명할 것.',
-  2: '- [어휘 수준]: 타겟 독자는 입문자입니다. 기초 개념 위주로 서술하되, 불가피한 전문 용어 사용 시 반드시 뜻을 풀이할 것.',
-  3: '',
-  4: '- [어휘 수준]: 타겟 독자는 관련 전공자/실무자입니다. 업계 표준 용어, 약어, 그리고 실무적인 개념을 주저 없이 사용할 것.',
-  5: '- [어휘 수준]: 타겟 독자는 해당 분야의 시니어/최고 전문가입니다. 논문 수준의 심층 어휘를 사용하고, 필요시 권위 있는 출처나 원리를 인용할 것.',
+const LEVEL_SNIPPETS: LangSnippetMap = {
+  ko: {
+    1: '- [어휘 수준]: 타겟 독자는 해당 지식이 전혀 없는 초보자입니다. 전문 용어를 철저히 배제하고 상위 1,000개 이내의 쉬운 일상 단어로만 설명할 것.',
+    2: '- [어휘 수준]: 타겟 독자는 입문자입니다. 기초 개념 위주로 서술하되, 불가피한 전문 용어 사용 시 반드시 뜻을 풀이할 것.',
+    3: '',
+    4: '- [어휘 수준]: 타겟 독자는 관련 전공자/실무자입니다. 업계 표준 용어, 약어, 그리고 실무적인 개념을 주저 없이 사용할 것.',
+    5: '- [어휘 수준]: 타겟 독자는 해당 분야의 시니어/최고 전문가입니다. 논문 수준의 심층 어휘를 사용하고, 필요시 권위 있는 출처나 원리를 인용할 것.',
+  },
+  en: {
+    1: '- [Vocabulary Level]: The target audience has zero prior knowledge. Strictly avoid jargon and use only the top 1,000 most common everyday words.',
+    2: '- [Vocabulary Level]: The target audience is a beginner. Focus on fundamental concepts; if technical terms are unavoidable, always define them immediately.',
+    3: '',
+    4: '- [Vocabulary Level]: The target audience consists of professionals or domain experts. Freely use industry-standard terminology, abbreviations, and advanced concepts.',
+    5: '- [Vocabulary Level]: The target audience is a senior specialist or top expert. Use academic-level, deeply technical vocabulary and cite authoritative sources or core principles when relevant.',
+  },
 };
 
-const DENSITY_SNIPPETS: SnippetMap = {
-  1: '- [정보 밀도]: 부연 설명을 모두 생략하고, 핵심만 3줄 이내의 개조식(Bullet points)으로 극도로 요약할 것.',
-  2: '- [정보 밀도]: 주요 특징만 간략히 나열하며, 불필요한 예시나 장황한 배경 설명은 제외할 것.',
-  3: '',
-  4: '- [정보 밀도]: 하위 목차를 세분화하여 구조적으로 서술하고, 다양한 엣지 케이스와 구체적인 예시를 3개 이상 다룰 것.',
-  5: '- [정보 밀도]: 가능한 모든 세부 정보, 작동 원리, 예외 상황, 역사적 배경 등을 TMI 수준으로 촘촘하고 매우 길게 서술할 것.',
+const DENSITY_SNIPPETS: LangSnippetMap = {
+  ko: {
+    1: '- [정보 밀도]: 부연 설명을 모두 생략하고, 핵심만 3줄 이내의 개조식(Bullet points)으로 극도로 요약할 것.',
+    2: '- [정보 밀도]: 주요 특징만 간략히 나열하며, 불필요한 예시나 장황한 배경 설명은 제외할 것.',
+    3: '',
+    4: '- [정보 밀도]: 하위 목차를 세분화하여 구조적으로 서술하고, 다양한 엣지 케이스와 구체적인 예시를 3개 이상 다룰 것.',
+    5: '- [정보 밀도]: 가능한 모든 세부 정보, 작동 원리, 예외 상황, 역사적 배경 등을 TMI 수준으로 촘촘하고 매우 길게 서술할 것.',
+  },
+  en: {
+    1: '- [Information Density]: Omit all elaboration. Present only the core point in 3 bullet points or fewer.',
+    2: '- [Information Density]: List only key characteristics briefly. Exclude unnecessary examples and verbose background context.',
+    3: '',
+    4: '- [Information Density]: Structure the response with detailed sub-sections and cover at least 3 concrete examples and edge cases.',
+    5: '- [Information Density]: Include every possible detail — mechanics, exceptions, historical background, etc. — in an exhaustively long and comprehensive response.',
+  },
 };
 
-const CREATIVITY_SNIPPETS: SnippetMap = {
-  1: '- [창의성]: 가장 널리 검증되고 정석적인 단일 해결책이나 교과서적인 정의만 정확하게 제시할 것.',
-  2: '- [창의성]: 표준적인 접근을 유지하되, 약간의 실무적 팁이나 대중적인 비유를 한 가지 정도 곁들일 것.',
-  3: '',
-  4: '- [창의성]: 기존의 틀을 깨는 참신한 시각과 독창적인 비유를 활용하여 다각도에서 아이디어를 확장할 것.',
-  5: '- [창의성]: 완전히 파격적이고 도발적인 접근법을 포함하며, 이질적인 개념들을 융합한 브레인스토밍 결과를 제시할 것.',
+const CREATIVITY_SNIPPETS: LangSnippetMap = {
+  ko: {
+    1: '- [창의성]: 가장 널리 검증되고 정석적인 단일 해결책이나 교과서적인 정의만 정확하게 제시할 것.',
+    2: '- [창의성]: 표준적인 접근을 유지하되, 약간의 실무적 팁이나 대중적인 비유를 한 가지 정도 곁들일 것.',
+    3: '',
+    4: '- [창의성]: 기존의 틀을 깨는 참신한 시각과 독창적인 비유를 활용하여 다각도에서 아이디어를 확장할 것.',
+    5: '- [창의성]: 완전히 파격적이고 도발적인 접근법을 포함하며, 이질적인 개념들을 융합한 브레인스토밍 결과를 제시할 것.',
+  },
+  en: {
+    1: '- [Creativity]: Present only the single most widely accepted, textbook-correct solution or definition.',
+    2: '- [Creativity]: Stick to standard approaches, but include one practical tip or a popular analogy.',
+    3: '',
+    4: '- [Creativity]: Challenge conventional thinking with fresh perspectives and original analogies, expanding ideas from multiple angles.',
+    5: '- [Creativity]: Embrace fully unconventional and provocative approaches, fusing disparate concepts into bold brainstorming results.',
+  },
 };
 
 // ── 티어 조작 유틸 함수 ───────────────────────────────────────────────────────
@@ -73,19 +112,29 @@ function getSnippetByTier(tier: number, snippets: SnippetMap): string {
 
 type TierSet = { tone: number; level: number; density: number; creativity: number };
 
-// ── 한글 티어 레이블 (카드 상단 설명 생성용) ─────────────────────────────────
-const TIER_LABELS: Record<keyof TierSet, Record<number, string | null>> = {
-  tone:       { 1: '극도 건조', 2: '격식체', 3: null, 4: '친근한 어투', 5: '유머러스' },
-  level:      { 1: '입문자용 어휘', 2: '초보자용 어휘', 3: null, 4: '전공자 어휘', 5: '최고 전문가 어휘' },
-  density:    { 1: '초압축 요약', 2: '간략 설명', 3: null, 4: '상세 서술', 5: '극도 상세' },
-  creativity: { 1: '정석적 접근', 2: '표준 접근', 3: null, 4: '창의적 접근', 5: '파격적 접근' },
+// ── 언어별 티어 레이블 (카드 상단 설명 생성용) ───────────────────────────────
+type TierLabelMap = Record<keyof TierSet, Record<number, string | null>>;
+
+const TIER_LABELS: { ko: TierLabelMap; en: TierLabelMap } = {
+  ko: {
+    tone:       { 1: '극도 건조', 2: '격식체', 3: null, 4: '친근한 어투', 5: '유머러스' },
+    level:      { 1: '입문자용 어휘', 2: '초보자용 어휘', 3: null, 4: '전공자 어휘', 5: '최고 전문가 어휘' },
+    density:    { 1: '초압축 요약', 2: '간략 설명', 3: null, 4: '상세 서술', 5: '극도 상세' },
+    creativity: { 1: '정석적 접근', 2: '표준 접근', 3: null, 4: '창의적 접근', 5: '파격적 접근' },
+  },
+  en: {
+    tone:       { 1: 'Ultra Dry', 2: 'Formal', 3: null, 4: 'Friendly', 5: 'Humorous' },
+    level:      { 1: 'Beginner Vocab', 2: 'Introductory Vocab', 3: null, 4: 'Expert Vocab', 5: 'Top Specialist Vocab' },
+    density:    { 1: 'Ultra Compact', 2: 'Brief', 3: null, 4: 'Detailed', 5: 'Exhaustive' },
+    creativity: { 1: 'By-the-Book', 2: 'Standard', 3: null, 4: 'Creative', 5: 'Unconventional' },
+  },
 };
 
-function buildTierDescription(tiers: TierSet): string {
-  const labels = (Object.keys(TIER_LABELS) as (keyof TierSet)[])
-    .map(k => TIER_LABELS[k][tiers[k]] ?? null)
+function buildTierDescription(tiers: TierSet, language: 'ko' | 'en' = 'ko'): string {
+  const labels = (Object.keys(TIER_LABELS.ko) as (keyof TierSet)[])
+    .map(k => TIER_LABELS[language][k][tiers[k]] ?? null)
     .filter((l): l is string => l !== null);
-  return labels.length ? labels.join(' · ') : '중립형';
+  return labels.length ? labels.join(' · ') : (language === 'en' ? 'Neutral' : '중립형');
 }
 
 function generateRandomVariantTiers(exactTiers: TierSet, exclude?: TierSet): TierSet {
@@ -107,24 +156,45 @@ function generateRandomVariantTiers(exactTiers: TierSet, exclude?: TierSet): Tie
   return fallback;
 }
 
-function buildConstraintSet(tiers: TierSet): string {
+function buildConstraintSet(tiers: TierSet, language: 'ko' | 'en' = 'ko'): string {
   const lines = [
-    getSnippetByTier(tiers.tone, TONE_SNIPPETS),
-    getSnippetByTier(tiers.level, LEVEL_SNIPPETS),
-    getSnippetByTier(tiers.density, DENSITY_SNIPPETS),
-    getSnippetByTier(tiers.creativity, CREATIVITY_SNIPPETS),
+    getSnippetByTier(tiers.tone, TONE_SNIPPETS[language]),
+    getSnippetByTier(tiers.level, LEVEL_SNIPPETS[language]),
+    getSnippetByTier(tiers.density, DENSITY_SNIPPETS[language]),
+    getSnippetByTier(tiers.creativity, CREATIVITY_SNIPPETS[language]),
   ].filter(Boolean);
-  return lines.length ? lines.join('\n') : '(없음 — 전 항목 중립, 타겟 AI 자율)';
+  const fallback = language === 'en'
+    ? '(None — all dimensions neutral, target AI has full discretion)'
+    : '(없음 — 전 항목 중립, 타겟 AI 자율)';
+  return lines.length ? lines.join('\n') : fallback;
 }
 
 // ── 정적 시스템 프롬프트 골격 (언어 파라미터를 받아 동적 조립) ────────────────
 function buildStaticSystemPrompt(language: 'ko' | 'en' = 'ko'): string {
-  // 프롬프트 본문은 항상 영어로 작성 (성능 최적화)
-  // 타겟 AI의 응답 언어만 인터페이스 언어에 따라 다르게 지시
-  const responseLanguageRule = language === 'en'
-    ? `6. Response Language Directive: Inside the \`<Constraints>\` section of every generated prompt, you MUST include the following instruction verbatim: "Respond in English."`
-    : `6. Response Language Directive: Inside the \`<Constraints>\` section of every generated prompt, you MUST include the following instruction verbatim: "한국어로 응답하십시오. (Respond in Korean)"`;
+  if (language === 'en') {
+    return `# Role
+You are a world-class B2B Prompt Engineer who perfectly controls target AIs (ChatGPT, Claude, etc.).
 
+# Objective
+Analyze the user's rough [Draft Prompt], combine it with the [Dynamic Constraints] reflecting the user's preferences, and generate 3 highly structured (using Markdown and XML tags) prompt candidates that the target AI can best read and execute.
+
+# 🚨 Critical Rules
+1. Style Separation Principle: The prompt text you generate must be a dry, analytical instruction document for a machine (the target AI) — not a beautifully written piece for a human reader.
+2. Constraint Translation: Do NOT apply the [Dynamic Constraints] provided below to your own writing style. These constraints must be inserted as explicit rules inside the \`<Constraints>\` tag within each generated prompt, as directives the target AI must follow.
+3. Variable Orthogonality: In the prompts you generate, explicitly state to the target AI that each constraint operates completely independently. Expert vocabulary (Level) does not imply a serious tone (Tone) or a long response (Density) — each attribute is mutually exclusive.
+4. Output Format Enforcement: You MUST respond only in the specified JSON format.
+5. Output Language: Write the body content (content) of all 3 generated prompts in **English**, so the target AI can best understand them.
+6. Response Language Directive: Inside the \`<Constraints>\` section of every generated prompt, you MUST include the following instruction verbatim: "Respond in English."
+
+# Generation Strategy
+Generate 3 prompts by applying the constraints below exactly to each candidate.
+- Candidate 1 (Main): Apply [Candidate 1 Constraints] only. This candidate is shown to the user first.
+- Candidate 2 (Variant A): Apply [Candidate 2 Constraints] only.
+- Candidate 3 (Variant B): Apply [Candidate 3 Constraints] only.
+Each candidate must strictly follow only its own assigned constraints and must not mix constraints from other candidates.`;
+  }
+
+  // 한국어 모드
   return `# Role
 당신은 타겟 AI(ChatGPT, Claude 등)를 완벽하게 통제하는 최고 수준의 'B2B 프롬프트 엔지니어'입니다.
 
@@ -136,8 +206,8 @@ function buildStaticSystemPrompt(language: 'ko' | 'en' = 'ko'): string {
 2. 제약 조건의 번역: 아래 제공되는 [동적 제약 조건]을 당신의 문체에 적용하지 마십시오. 이 조건들은 당신이 생성하는 프롬프트 내부의 \`<Constraints>\` 태그 안에 '타겟 AI가 지켜야 할 명시적 규칙'으로 삽입되어야 합니다.
 3. 변수 독립성(Orthogonality) 유지: 당신이 생성하는 프롬프트 내부의 각 제약 조건은 철저하게 독립적으로 작동해야 한다고 타겟 AI에게 명시하십시오. 전문적인 어휘(Level)가 진지한 어투(Tone)나 긴 글(Density)을 의미하지 않으며, 각 속성은 서로 침범하지 않는다는 상호 배제(Mutually Exclusive) 원칙을 포함하십시오.
 4. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답해야 합니다.
-5. 출력 언어: 생성하는 3개의 프롬프트 본문 내용(content)은 타겟 AI가 가장 잘 이해할 수 있도록 반드시 **영어(English)**로 작성하십시오.
-${responseLanguageRule}
+5. 출력 언어: 생성하는 3개의 프롬프트 본문 내용(content)은 사용자 인터페이스 언어에 맞게 반드시 **한국어(Korean)**로 작성하십시오.
+6. Response Language Directive: Inside the \`<Constraints>\` section of every generated prompt, you MUST include the following instruction verbatim: "한국어로 응답하십시오. (Respond in Korean)"
 
 # Generation Strategy (후보군 3개 생성 전략)
 아래 [후보별 제약 조건]을 각 후보에 정확히 적용하여 프롬프트 3개를 생성하십시오.
@@ -155,7 +225,26 @@ function buildDynamicContext(params: {
   exactConstraints: string;
   variantAConstraints: string;
   variantBConstraints: string;
+  language: 'ko' | 'en';
 }): string {
+  if (params.language === 'en') {
+    return `# Context: User Data
+- [Background Context]:
+  - Job / Domain: ${params.job}
+  - Primary Purpose: ${params.purpose}
+- [Draft Prompt]: "${params.draft}"
+
+# Per-Candidate Constraints
+- [Candidate 1 Constraints (Exact User Preference)]:
+${params.exactConstraints}
+
+- [Candidate 2 Constraints (Variant A)]:
+${params.variantAConstraints}
+
+- [Candidate 3 Constraints (Variant B)]:
+${params.variantBConstraints}`;
+  }
+
   return `# Context: 사용자 데이터
 - [배경 맥락 (Background Context)]:
   - 직업/도메인: ${params.job}
@@ -222,9 +311,10 @@ export const generatePromptCandidates = async (
     job,
     purpose,
     draft: originalInput,
-    exactConstraints: buildConstraintSet(exactTiers),
-    variantAConstraints: buildConstraintSet(variantATiers),
-    variantBConstraints: buildConstraintSet(variantBTiers),
+    exactConstraints: buildConstraintSet(exactTiers, language as 'ko' | 'en'),
+    variantAConstraints: buildConstraintSet(variantATiers, language as 'ko' | 'en'),
+    variantBConstraints: buildConstraintSet(variantBTiers, language as 'ko' | 'en'),
+    language: language as 'ko' | 'en',
   });
 
   try {
@@ -244,7 +334,7 @@ export const generatePromptCandidates = async (
         ...c.metadata,
         variant: variantLabels[i] ?? 'exact',
         appliedTiers: tierSets[i] ?? exactTiers,
-        tierDescription: buildTierDescription(tierSets[i] ?? exactTiers),
+        tierDescription: buildTierDescription(tierSets[i] ?? exactTiers, language as 'ko' | 'en'),
       },
     }));
 
