@@ -11,7 +11,7 @@ const DEFAULT_PREFS: Preferences = { tone: 1.0, level: 1.0, density: 1.0, creati
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,15 +40,46 @@ export default function AnalyticsPage() {
     fetchPreferences();
   }, [user]);
 
-  const pct = (key: keyof Preferences) =>
-    isLoading ? 0 : Math.round((prefs[key] / 2.0) * 100);
+  // Convert weight_score (0~2.0) to step 1~5
+  const toStep = (key: keyof Preferences): number => {
+    if (isLoading) return 0;
+    // 0~2.0 → 1~5: clamp to [0, 2], map to [1, 5]
+    const clamped = Math.max(0, Math.min(2.0, prefs[key]));
+    return Math.round(1 + (clamped / 2.0) * 4);
+  };
 
-  const items: { key: keyof Preferences; labelKey: string }[] = [
-    { key: "tone",       labelKey: "analytics.tone" },
-    { key: "level",      labelKey: "analytics.level" },
-    { key: "density",    labelKey: "analytics.density" },
-    { key: "creativity", labelKey: "analytics.creativity" },
+  const items: {
+    key: keyof Preferences;
+    labelKey: string;
+    startLabel: { ko: string; en: string };
+    endLabel: { ko: string; en: string };
+  }[] = [
+    {
+      key: "tone",
+      labelKey: "analytics.tone",
+      startLabel: { ko: "간결함", en: "Concise" },
+      endLabel:   { ko: "자세함", en: "Detailed" },
+    },
+    {
+      key: "level",
+      labelKey: "analytics.level",
+      startLabel: { ko: "쉬운",   en: "Simple" },
+      endLabel:   { ko: "전문적", en: "Expert" },
+    },
+    {
+      key: "density",
+      labelKey: "analytics.density",
+      startLabel: { ko: "가벼운", en: "Light" },
+      endLabel:   { ko: "빽빽한", en: "Dense" },
+    },
+    {
+      key: "creativity",
+      labelKey: "analytics.creativity",
+      startLabel: { ko: "보수적", en: "Conservative" },
+      endLabel:   { ko: "창의적", en: "Creative" },
+    },
   ];
+
 
   return (
     <div className="flex flex-col gap-[40px] items-start w-full max-w-[896px] py-[48px] mx-auto z-10 relative">
@@ -78,27 +109,82 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="flex flex-col gap-10">
-            {items.map(({ key, labelKey }) => (
-              <div key={key} className="flex flex-col gap-2">
-                <div className="flex justify-between items-end">
+            {items.map(({ key, labelKey, startLabel, endLabel }) => {
+              const step = toStep(key);
+              return (
+                <div key={key} className="flex flex-col gap-3">
+                  {/* Label row */}
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#2b3896]" />
                     <span className="text-[#454652] text-[14px] font-semibold tracking-[-0.35px]">
                       {t(labelKey as any)}
                     </span>
                   </div>
-                  <span className="text-[#2b3896] text-[18px] font-bold leading-none">
-                    {pct(key)}%
-                  </span>
+
+                  {/* Step bar row */}
+                  <div className="flex items-center gap-3">
+                    {/* Left pole label */}
+                    <span className="text-[#9093a4] text-[12px] font-medium whitespace-nowrap w-[52px] text-right shrink-0">
+                      {language === "ko" ? startLabel.ko : startLabel.en}
+                    </span>
+
+                    {/* 5-step track — absolute layout for equal spacing */}
+                    <div className="relative flex-1" style={{ height: "22px" }}>
+                      {/* Background track */}
+                      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] bg-[#e8eaf0] rounded-full" />
+                      {/* Active fill track */}
+                      <div
+                        className="absolute top-1/2 -translate-y-1/2 h-[3px] bg-[#2b3896] rounded-full transition-all duration-700"
+                        style={{
+                          left: 0,
+                          width: isLoading || step <= 1
+                            ? "0%"
+                            : `${((step - 1) / 4) * 100}%`,
+                        }}
+                      />
+                      {/* Dots at 0%, 25%, 50%, 75%, 100% */}
+                      {[1, 2, 3, 4, 5].map((s) => {
+                        const isActive  = !isLoading && s <= step;
+                        const isCurrent = !isLoading && s === step;
+                        const pct = ((s - 1) / 4) * 100;
+                        return (
+                          <div
+                            key={s}
+                            className="absolute top-1/2 rounded-full transition-all duration-700 flex items-center justify-center"
+                            style={{
+                              left: `${pct}%`,
+                              transform: "translate(-50%, -50%)",
+                              width:  isCurrent ? "22px" : "12px",
+                              height: isCurrent ? "22px" : "12px",
+                              backgroundColor: isActive ? "#2b3896" : "#e8eaf0",
+                              boxShadow: isCurrent ? "0 0 0 4px rgba(43,56,150,0.18)" : "none",
+                            }}
+                          >
+                            {isCurrent && (
+                              <span className="text-white text-[11px] font-bold leading-none">
+                                {s}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Right pole label */}
+                    <span className="text-[#9093a4] text-[12px] font-medium whitespace-nowrap w-[52px] shrink-0">
+                      {language === "ko" ? endLabel.ko : endLabel.en}
+                    </span>
+                  </div>
+
+                  {/* Step count label */}
+                  <div className="flex justify-center">
+                    <span className="text-[#2b3896] text-[12px] font-semibold">
+                      {isLoading ? "—" : `${step}${language === "ko" ? "단계" : " / 5"}`}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full h-3 bg-[#f2f4f6] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#2b3896] rounded-full transition-all duration-1000 ease-in-out"
-                    style={{ width: `${pct(key)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
