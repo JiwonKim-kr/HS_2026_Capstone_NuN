@@ -597,12 +597,11 @@ export const generatePromptCandidates = async (
   const { userId, originalInput, context, language = 'ko' } = requestData;
   const lang = language as 'ko' | 'en';
 
-  // 0. 초안에서 타겟 모달리티 자동 감지
-  const modality = await classifyModality(originalInput);
-  const dims = MODALITY_DIMENSIONS[modality];
-
-  // 1. Supabase에서 유저 프로필 + 가중치 병렬 조회
-  const [profileResult, prefsResult] = await Promise.all([
+  // 0~1. 모달리티 분류 + 유저 프로필/가중치 조회를 병렬 실행.
+  //   DB 조회는 userId만 사용해 modality 분류와 의존성이 없으므로 동시에 돌린다
+  //   (분류용 Haiku 호출 1회 왕복만큼 지연 단축).
+  const [modality, profileResult, prefsResult] = await Promise.all([
+    classifyModality(originalInput),
     supabase
       .from('users')
       .select('job_role, primary_purpose')
@@ -613,6 +612,7 @@ export const generatePromptCandidates = async (
       .select('category, weight_score')
       .eq('user_id', userId),
   ]);
+  const dims = MODALITY_DIMENSIONS[modality];
 
   const job = profileResult.data?.job_role ?? context?.domain ?? '명시되지 않음';
   const purpose = profileResult.data?.primary_purpose ?? '명시되지 않음';
@@ -656,21 +656,43 @@ export const generatePromptCandidates = async (
       prompt: dynamicContext,
     });
 
-    const variantLabels = ['exact', 'variant_a', 'variant_b'] as const;
-    const tierSets = [exactTiers, variantATiers, variantBTiers];
+    // 후보 개수 가드 — LLM이 정확히 3개를, 할당 순서대로 반환한다는 보장은 없다.
+    //   slot(라벨+tierSet)을 단일 출처로 두고, 받은 후보 수만큼만 위치 기준으로 짝짓는다.
+    //   · 0개: 보여줄 게 없으므로 에러로 처리해 사용자가 재시도하도록 한다.
+    //   · 초과분(>3): 대응하는 slot이 없어 잘못된 메타데이터가 붙으므로 버린다.
+    //   · 부족분(<3): 받은 만큼만 매핑. exact가 항상 첫 slot이라 가장 중요한 후보는 보존된다.
+    const slots = [
+      { variant: 'exact' as const, tiers: exactTiers },
+      { variant: 'variant_a' as const, tiers: variantATiers },
+      { variant: 'variant_b' as const, tiers: variantBTiers },
+    ];
 
-    const candidates = result.output.candidates.map((c, i) => ({
-      ...c,
-      metadata: {
-        ...c.metadata,
-        targetModality: modality,
-        variant: variantLabels[i] ?? 'exact',
-        appliedTiers: tierSets[i] ?? exactTiers,
-        tierDescription: buildTierDescription(modality, tierSets[i] ?? exactTiers, lang),
-      },
-    }));
+    const rawCandidates = result.output.candidates ?? [];
+    if (rawCandidates.length === 0) {
+      throw new Error('AI가 프롬프트 후보를 생성하지 못했습니다. 다시 시도해주세요.');
+    }
+    if (rawCandidates.length !== slots.length) {
+      console.warn(
+        `[generatePromptCandidates] Expected ${slots.length} candidates but got ${rawCandidates.length} ` +
+        `(modality=${modality}); aligning to ${Math.min(rawCandidates.length, slots.length)} to keep tier metadata correct.`
+      );
+    }
 
-    // DB에 3개 후보군 개별 삽입
+    const candidates = slots.slice(0, rawCandidates.length).map((slot, i) => {
+      const c = rawCandidates[i];
+      return {
+        ...c,
+        metadata: {
+          ...c.metadata,
+          targetModality: modality,
+          variant: slot.variant,
+          appliedTiers: slot.tiers,
+          tierDescription: buildTierDescription(modality, slot.tiers, lang),
+        },
+      };
+    });
+
+    // DB에 후보군 개별 삽입
     const sessionId = randomUUID();
     const insertPayloads = candidates.map((c) => ({
       session_id: sessionId,

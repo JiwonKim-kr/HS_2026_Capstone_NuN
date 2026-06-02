@@ -8,7 +8,7 @@
     * **배경 맥락 (Background Context):** 사용자의 직업, 목적 등 기본 정보는 타겟 AI의 태도와 지식 풀을 결정하는 정적인 배경으로만 작용합니다.
     * **직접 변수 (Direct Variable/Constraint):** 4대 가중치(어투, 수준, 밀도, 창의성)는 프롬프트 내부에 명시적 제약 조건(`<Constraints>` 태그)으로 강제 주입되어 출력 형태를 직접적으로 조종합니다.
 * **변수 독립성 확보 (Orthogonality):** 여러 가중치가 혼합될 때 발생하는 '속성 얽힘(Entanglement)'을 방지하기 위해, 각 가중치는 철저히 자신의 영역만 제어하며 상호 배제(Mutually Exclusive) 원칙을 지킵니다. (예: 수준이 높다고 글이 길어지지 않음)
-* **비용 및 성능 최적화:** 중립(Tier 3) 가중치는 지시문 주입을 생략하여 토큰을 절약하고, 프롬프트의 뼈대는 캐싱(Prompt Caching)을 활용할 수 있도록 정적 파트와 동적 파트로 분리 설계합니다.
+* **비용 및 성능 최적화:** 중립(Tier 3) 가중치는 지시문 주입을 생략하여 토큰을 절약합니다. 또한 프롬프트는 정적 파트(역할·규칙)와 동적 파트(사용자 데이터·제약)로 분리해 구조적 명료성과 유지보수성을 확보합니다.
 
 ---
 
@@ -80,7 +80,7 @@ const TIER_THRESHOLDS: { maxScore: number; tier: number }[] = [
 
 백엔드에서 Claude API를 호출할 때 주입되는 최종 문자열입니다. `{{ }}`로 표시된 변수 구역에 위에서 계산된 스니펫 및 사용자 정보가 삽입됩니다.
 
-정적 파트(`STATIC_SYSTEM_PROMPT`)와 동적 파트(`buildDynamicContext`)로 분리하여 Prompt Caching을 활용합니다.
+정적 파트(`STATIC_SYSTEM_PROMPT`)와 동적 파트(`buildDynamicContext`)로 분리하여 역할/규칙과 사용자별 데이터를 명확히 구분합니다.
 
 ```text
 # Role
