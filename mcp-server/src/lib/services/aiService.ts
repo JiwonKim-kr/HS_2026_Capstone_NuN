@@ -428,8 +428,8 @@ Analyze the user's rough [Draft Prompt], combine it with the [Per-Candidate Cons
 1. Style Separation: the prompt you generate is a dry instruction document for a machine (the target AI), not a beautifully written piece for a human.
 2. Constraint Translation: do NOT apply the [Per-Candidate Constraints] to your own writing; insert them inside \`<Constraints>\` as explicit rules the target AI must follow.
 3. Variable Orthogonality: explicitly state that each constraint operates independently (mutually exclusive). Expert vocabulary (Level) does not imply a serious Tone or a long response (Density).
-4. Preserve Intent: never drop or arbitrarily generalize the concrete entities, proper nouns, numbers, or the core request found in the draft.
-5. Baseline Quality: even when constraints are empty or neutral, always apply prompt-engineering best practices — a clear role, an explicit task, a defined output format, and removal of ambiguity.
+4. Preserve & Enrich: keep everything the draft specifies (entities, proper nouns, numbers, the core request) and never contradict or drop it — but proactively fill unstated gaps with sensible, domain-appropriate detail. The draft is a seed, not a ceiling; never stay minimal just because the draft is short.
+5. Baseline Quality: even when constraints are empty or neutral, always produce a complete prompt that is clearly richer than the draft — a clear role, an explicit task, concrete context, success criteria, and a defined output format, with all ambiguity removed.
 6. Output Format Enforcement: respond only in the specified JSON format.
 7. Output Language: write the 'content' of all 3 prompts in **English**.
 8. Response Language Directive: inside every prompt's \`<Constraints>\`, include verbatim: "Respond in English."
@@ -473,8 +473,8 @@ Each candidate follows only its own constraints and must be clearly distinct fro
 1. 문체 분리의 원칙: 당신이 생성하는 프롬프트는 인간이 읽는 예쁜 글이 아니라, 기계(타겟 AI)가 읽는 건조한 지시서입니다.
 2. 제약 조건의 번역: [후보별 제약 조건]을 당신의 문체에 적용하지 말고, \`<Constraints>\` 안에 '타겟 AI가 지켜야 할 명시적 규칙'으로 삽입하십시오.
 3. 변수 독립성(Orthogonality): 각 제약은 독립적으로 작동함을(상호 배제) 타겟 AI에게 명시하십시오. 전문적인 어휘(Level)가 진지한 어투(Tone)나 긴 글(Density)을 의미하지 않습니다.
-4. 초안 의도 보존: 초안에 담긴 구체적 개체·고유명사·수치·핵심 요청을 절대 누락하거나 임의로 일반화하지 마십시오.
-5. 기본 품질 보장: 제약 조건이 비어 있거나 중립이어도, 명확한 역할·명시적 작업·정의된 출력 형식·모호함 제거 같은 프롬프트 엔지니어링 베스트 프랙티스를 항상 적용하십시오.
+4. 보존과 보강: 초안이 명시한 것(개체·고유명사·수치·핵심 요청)은 보존하고 모순/누락하지 마십시오. 다만 명시되지 않은 빈칸은 합리적이고 도메인에 맞는 디테일로 적극 채우십시오. 초안은 '천장'이 아니라 '씨앗'이며, 초안이 짧다고 출력까지 빈약하게 두지 마십시오.
+5. 기본 품질 보장: 제약 조건이 비어 있거나 중립이어도, 명확한 역할·명시적 작업·구체적 맥락·성공 기준·정의된 출력 형식을 갖춘, 초안보다 확실히 더 풍부한 프롬프트를 작성하고 모든 모호함을 제거하십시오.
 6. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답하십시오.
 7. 출력 언어: 생성하는 3개 프롬프트의 content는 반드시 **한국어(Korean)**로 작성하십시오.
 8. Response Language Directive: 모든 프롬프트의 \`<Constraints>\`에 "한국어로 응답하십시오. (Respond in Korean)"를 그대로 포함하십시오.
@@ -554,8 +554,8 @@ Analyze the user's rough [Draft Prompt], combine it with the [Per-Candidate Cons
 2. No Meta-Wrapping: do NOT add conversational framing, "Respond in..." directives, or chat-style instructions. Output only the kind of richly descriptive prompt these tools expect.
 3. Cover the Essentials: weave in the relevant elements naturally: ${guide.elements}.
 4. Constraint Embodiment: bake the [Per-Candidate Constraints] directly into the descriptive wording.
-5. Preserve Intent: never drop or arbitrarily generalize the concrete subject, named entities, or core idea from the draft.
-6. Baseline Quality: even when constraints are empty or neutral, always produce a concrete, vivid, well-specified prompt (avoid vague one-liners).
+5. Preserve & Enrich: keep the concrete subject, named entities, and core idea from the draft and never contradict them — but proactively add sensible, genre-appropriate detail for every relevant element. The draft is a seed, not a ceiling.
+6. Enrich, don't echo: even a one-line draft MUST become a fully specified, vivid prompt at the richness level of the Example below (subject specifics, setting, camera, lighting, mood, motion, style, duration, aspect ratio). Never output a vague one-liner.
 7. Output Format Enforcement: respond only in the specified JSON format.
 8. Output Language: write the 'content' of all 3 prompts in **English** (the language these tools understand best), even if the UI language differs.
 
@@ -584,8 +584,8 @@ ${example}`;
 2. 메타 래핑 금지: 대화체 서두나 "~로 응답하십시오" 같은 지시, 챗봇식 안내를 추가하지 마십시오. 해당 도구가 기대하는 풍부한 묘사형 프롬프트만 출력하십시오.
 3. 핵심 요소 포함: 다음 요소들을 자연스럽게 녹여내십시오: ${guide.elements}.
 4. 제약 조건의 체화: [후보별 제약 조건]을 묘사형 표현 자체에 직접 반영하십시오.
-5. 초안 의도 보존: 초안의 구체적 피사체·고유명사·핵심 아이디어를 누락하거나 임의로 일반화하지 마십시오.
-6. 기본 품질 보장: 제약이 비어 있거나 중립이어도 구체적이고 생생하며 잘 명세된 프롬프트를 작성하십시오(막연한 한 줄 금지).
+5. 보존과 보강: 초안의 구체적 피사체·고유명사·핵심 아이디어는 보존하고 모순시키지 마십시오. 다만 관련 요소마다 합리적이고 장르에 맞는 디테일을 능동적으로 추가하십시오. 초안은 '천장'이 아니라 '씨앗'입니다.
+6. 메아리 금지(보강): 한 줄짜리 초안도 아래 예시 수준의 완전히 명세된 생생한 프롬프트로 키우십시오(피사체 디테일·배경·카메라·조명·무드·모션·스타일·길이·종횡비). 막연한 한 줄을 절대 출력하지 마십시오.
 7. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답해야 합니다.
 8. 출력 언어: 생성하는 3개 프롬프트의 'content'는 (UI 언어와 무관하게) 영어(English)로 작성하십시오.
 
