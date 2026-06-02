@@ -5,6 +5,7 @@ import { Sparkles, Edit2, Copy, Check, ThumbsUp, ChevronLeft, ChevronRight, Rota
 import { PromptCandidateType } from "@/schemas/promptSchema";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { TranslationKey } from "@/lib/i18n/translations";
+import { useTranslatedPrompts } from "@/lib/hooks/useTranslatedPrompts";
 
 type ErrorConfig = {
   titleKey: TranslationKey;
@@ -69,12 +70,15 @@ interface AnalysisResultProps {
 }
 
 export function AnalysisResult({ originalPrompt, candidates, loading, error, onRestart }: AnalysisResultProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedStatus, setLikedStatus] = useState<Record<string, boolean>>({});
   const [msgIndex, setMsgIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGE_KEYS.length));
   const [msgVisible, setMsgVisible] = useState(true);
+  // 표시 전용 번역 (미디어 프롬프트는 영어로 생성됨 → 한국어 UI일 때만 번역해서 보여줌. 복사는 원문 유지)
+  const [showOriginalMap, setShowOriginalMap] = useState<Record<string, boolean>>({});
+  const { translations, pending: translating } = useTranslatedPrompts(candidates, language);
 
   useEffect(() => {
     if (!loading) return;
@@ -243,6 +247,12 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
                 const isLiked = likedStatus[candidate.candidateId] || false;
                 const isCopied = copiedId === candidate.candidateId;
 
+                // 표시 전용: 미디어 content는 영어이므로 한국어 UI면 번역본을 보여준다 (복사는 원문 candidate.content 유지)
+                const isMediaKo = language === 'ko' && !!candidate.metadata.targetModality && candidate.metadata.targetModality !== 'text';
+                const translated = translations[candidate.candidateId];
+                const showingOriginal = showOriginalMap[candidate.candidateId] ?? false;
+                const displayContent = isMediaKo && translated && !showingOriginal ? translated : candidate.content;
+
                 return (
                   <div
                     key={candidate.candidateId}
@@ -269,9 +279,26 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
                       </div>
                     </div>
 
+                    {isMediaKo && (
+                      <div className="flex items-center gap-2 mb-2 text-xs" onClick={(e) => e.stopPropagation()}>
+                        {translating[candidate.candidateId] && !translated ? (
+                          <span className="text-[#757684]">한국어 번역 중…</span>
+                        ) : translated ? (
+                          <button
+                            onClick={() => setShowOriginalMap(prev => ({ ...prev, [candidate.candidateId]: !showingOriginal }))}
+                            className="text-[#2b3896] hover:underline"
+                          >
+                            {showingOriginal ? '🌐 한국어 번역 보기' : '🌐 영어 원문 보기'}
+                          </button>
+                        ) : (
+                          <span className="text-[#a0a0a0]">번역 실패 · 원문 표시</span>
+                        )}
+                      </div>
+                    )}
+
                     <div className="flex-1 overflow-y-auto pr-2 mb-6 custom-scrollbar">
                       <p className="text-[16px] text-[#454652] leading-[28px] whitespace-pre-wrap">
-                        {candidate.content}
+                        {displayContent}
                       </p>
                     </div>
 
