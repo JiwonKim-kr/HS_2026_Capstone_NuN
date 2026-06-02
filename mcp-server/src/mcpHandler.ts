@@ -36,20 +36,17 @@ export function createMcpServer(userId: string): McpServer {
     {
       logId: z.string().describe("The log ID of the prompt candidate (from generate_prompt response)"),
       targetLikeStatus: z.boolean().describe("true for like, false for unlike"),
-      appliedTiers: z.object({
-        tone: z.number(),
-        level: z.number(),
-        density: z.number(),
-        creativity: z.number(),
-      }).describe("The tiers applied to this candidate (from generate_prompt response)"),
+      appliedTiers: z.record(z.string(), z.number()).describe("The tiers applied to this candidate, keyed by modality dimension (from generate_prompt response)"),
+      targetModality: z.enum(['text', 'image', 'video', 'music']).optional().describe("The detected target modality (from generate_prompt response metadata)"),
     },
-    async ({ logId, targetLikeStatus, appliedTiers }) => {
+    async ({ logId, targetLikeStatus, appliedTiers, targetModality }) => {
       try {
         const result = await processFeedback({
           userId,
           historyId: logId,
           targetLikeStatus,
           appliedTiers,
+          targetModality,
         });
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
       } catch (error: any) {

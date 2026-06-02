@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseAdmin.js';
+import { Modality, isModality, prefKey } from './modality.js';
 
 const TIER_REPRESENTATIVE_SCORES: Record<number, number> = {
   1: 0.25,
@@ -11,14 +12,11 @@ const TIER_REPRESENTATIVE_SCORES: Record<number, number> = {
 export const processFeedback = async (params: {
   historyId: string;
   userId: string;
-  appliedTiers: {
-    tone: number;
-    level: number;
-    density: number;
-    creativity: number;
-  };
+  appliedTiers: Record<string, number>;
+  targetModality?: Modality;
   targetLikeStatus: boolean;
 }) => {
+  const modality: Modality = isModality(params.targetModality) ? params.targetModality : 'text';
   // 1. Fetch current prompt_log to check if weight was already applied
   const { data: logData, error: logError } = await supabase
     .from('prompt_logs')
@@ -66,29 +64,31 @@ export const processFeedback = async (params: {
   }
 
   const existingPrefs = prefsData || [];
-  const categories: (keyof typeof params.appliedTiers)[] = ['tone', 'level', 'density', 'creativity'];
+  // appliedTiers의 키(=해당 모달리티의 차원)만 순회. 카테고리는 모달리티 네임스페이스 적용.
+  const dimensions = Object.keys(params.appliedTiers);
 
   const existingRows = [];
   const newRows = [];
 
-  for (const cat of categories) {
-    const existingRow = existingPrefs.find(p => p.category === cat);
+  for (const dim of dimensions) {
+    const category = prefKey(modality, dim);
+    const existingRow = existingPrefs.find(p => p.category === category);
     const currentScore = existingRow ? existingRow.weight_score : 1.0;
-    const representativeScore = TIER_REPRESENTATIVE_SCORES[params.appliedTiers[cat]] ?? 1.0;
+    const representativeScore = TIER_REPRESENTATIVE_SCORES[params.appliedTiers[dim]] ?? 1.0;
     const newScore = (currentScore + representativeScore) / 2;
 
     if (existingRow) {
       existingRows.push({
         id: existingRow.id,
         user_id: params.userId,
-        category: cat,
+        category,
         weight_score: newScore,
         updated_at: new Date().toISOString()
       });
     } else {
       newRows.push({
         user_id: params.userId,
-        category: cat,
+        category,
         weight_score: newScore,
         updated_at: new Date().toISOString()
       });

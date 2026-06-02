@@ -5,14 +5,22 @@ import { Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
 import { useTranslation } from "@/lib/i18n/useTranslation";
-
-type Preferences = { tone: number; level: number; density: number; creativity: number };
-const DEFAULT_PREFS: Preferences = { tone: 1.0, level: 1.0, density: 1.0, creativity: 1.0 };
+import { useLanguageContext } from "@/lib/i18n/LanguageProvider";
+import {
+  MODALITIES,
+  MODALITY_DIMENSIONS,
+  MODALITY_DISPLAY,
+  DIMENSION_DISPLAY,
+  prefKey,
+} from "@/lib/services/modality";
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [prefs, setPrefs] = useState<Preferences>(DEFAULT_PREFS);
+  const { language } = useLanguageContext();
+  const lang = (language === "en" ? "en" : "ko") as "ko" | "en";
+  // category(prefKey) → weight_score
+  const [weights, setWeights] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -26,29 +34,21 @@ export default function AnalyticsPage() {
         .select("category, weight_score")
         .eq("user_id", user.id);
 
-      if (!error && data && data.length > 0) {
-        const updated = { ...DEFAULT_PREFS };
+      if (!error && data) {
+        const map: Record<string, number> = {};
         data.forEach((row) => {
-          if (row.category in updated) {
-            updated[row.category as keyof Preferences] = row.weight_score;
-          }
+          map[row.category] = row.weight_score;
         });
-        setPrefs(updated);
+        setWeights(map);
       }
       setIsLoading(false);
     }
     fetchPreferences();
   }, [user]);
 
-  const pct = (key: keyof Preferences) =>
-    isLoading ? 0 : Math.round((prefs[key] / 2.0) * 100);
-
-  const items: { key: keyof Preferences; labelKey: string }[] = [
-    { key: "tone",       labelKey: "analytics.tone" },
-    { key: "level",      labelKey: "analytics.level" },
-    { key: "density",    labelKey: "analytics.density" },
-    { key: "creativity", labelKey: "analytics.creativity" },
-  ];
+  // 가중치 미존재 시 1.0(중립) 기본값. 0~2.0 → 0~100%
+  const pct = (category: string) =>
+    isLoading ? 0 : Math.round(((weights[category] ?? 1.0) / 2.0) * 100);
 
   return (
     <div className="flex flex-col gap-[40px] items-start w-full max-w-[896px] py-[48px] mx-auto z-10 relative">
@@ -77,25 +77,41 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-10">
-            {items.map(({ key, labelKey }) => (
-              <div key={key} className="flex flex-col gap-2">
-                <div className="flex justify-between items-end">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#2b3896]" />
-                    <span className="text-[#454652] text-[14px] font-semibold tracking-[-0.35px]">
-                      {t(labelKey as any)}
-                    </span>
-                  </div>
-                  <span className="text-[#2b3896] text-[18px] font-bold leading-none">
-                    {pct(key)}%
+          <div className="flex flex-col gap-12">
+            {MODALITIES.map((modality) => (
+              <div key={modality} className="flex flex-col gap-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-[#191c1e] text-[16px] font-semibold tracking-[-0.4px]">
+                    {MODALITY_DISPLAY[modality][lang]}
                   </span>
+                  <div className="flex-1 h-px bg-[#eceef0]" />
                 </div>
-                <div className="w-full h-3 bg-[#f2f4f6] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#2b3896] rounded-full transition-all duration-1000 ease-in-out"
-                    style={{ width: `${pct(key)}%` }}
-                  />
+
+                <div className="flex flex-col gap-8">
+                  {MODALITY_DIMENSIONS[modality].map((dim) => {
+                    const category = prefKey(modality, dim);
+                    return (
+                      <div key={category} className="flex flex-col gap-2">
+                        <div className="flex justify-between items-end">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-[#2b3896]" />
+                            <span className="text-[#454652] text-[14px] font-semibold tracking-[-0.35px]">
+                              {DIMENSION_DISPLAY[modality][dim][lang]}
+                            </span>
+                          </div>
+                          <span className="text-[#2b3896] text-[18px] font-bold leading-none">
+                            {pct(category)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-3 bg-[#f2f4f6] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#2b3896] rounded-full transition-all duration-1000 ease-in-out"
+                            style={{ width: `${pct(category)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}

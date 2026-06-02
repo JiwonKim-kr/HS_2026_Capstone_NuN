@@ -120,6 +120,7 @@ export function AnalysisResult({ originalPrompt, candidates, loading, error, onR
         body: JSON.stringify({
           historyId: candidate.logId,
           appliedTiers: candidate.metadata.appliedTiers,
+          targetModality: candidate.metadata.targetModality,
           targetLikeStatus: targetStatus
         }),
       });

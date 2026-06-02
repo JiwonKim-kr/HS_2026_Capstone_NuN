@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   if (error) return error;
 
   try {
-    const { historyId, appliedTiers, targetLikeStatus } = await req.json();
+    const { historyId, appliedTiers, targetModality, targetLikeStatus } = await req.json();
 
     if (!historyId || !appliedTiers || typeof targetLikeStatus !== 'boolean') {
       return NextResponse.json(
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
       historyId,
       userId: user.id,
       appliedTiers,
+      targetModality,
       targetLikeStatus,
     });
 

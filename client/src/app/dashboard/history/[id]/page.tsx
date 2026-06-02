@@ -95,6 +95,7 @@ export default function HistoryDetailPage({
         body: JSON.stringify({
           historyId: candidate.logId,
           appliedTiers,
+          targetModality: candidate.metadata.targetModality,
           targetLikeStatus
         })
       });

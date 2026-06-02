@@ -52,7 +52,8 @@ export function OptimizationResult({ originalPrompt, selectedCandidate, onRestar
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           historyId,
-          appliedTiers: selectedCandidate.metadata.appliedTiers
+          appliedTiers: selectedCandidate.metadata.appliedTiers,
+          targetModality: selectedCandidate.metadata.targetModality
         })
       });
       const data = await res.json();
