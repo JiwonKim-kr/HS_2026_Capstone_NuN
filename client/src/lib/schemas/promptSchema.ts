@@ -22,9 +22,6 @@ export const promptCandidateSchema = z.object({
   logId: z.string().uuid().optional().describe('DB에 저장된 prompt_logs ID'),
   content: z.string().describe('최적화된 프롬프트 내용'),
   metadata: z.object({
-    tone: z.string().optional(),
-    format: z.string().optional(),
-    length: z.string().optional(),
     targetModality: targetModalitySchema.optional().describe('감지된 타겟 AI 모달리티'),
     variant: z.enum(['exact', 'variant_a', 'variant_b']).optional(),
     tierDescription: z.string().optional(),
@@ -48,12 +45,8 @@ export const generatePromptResponseSchema = z.object({
 export const promptGenerationSchema = z.object({
   candidates: z.array(z.object({
     candidateId: z.string().describe('후보 고유 ID'),
-    content: z.string().describe('최적화된 프롬프트 내용'),
-    metadata: z.object({
-      tone: z.string().optional(),
-      format: z.string().optional(),
-      length: z.string().optional(),
-    }),
+    approach: z.string().describe('이 후보를 어떻게 설계할지 1~2문장으로 적는 계획 메모. content보다 먼저 작성하며, 사용자에게 노출되지 않는다.'),
+    content: z.string().describe('완성된 프롬프트 전문'),
   })),
 });
 

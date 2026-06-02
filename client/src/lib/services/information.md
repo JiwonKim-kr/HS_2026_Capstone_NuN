@@ -7,7 +7,7 @@
 
 ## 1. 코어 아키텍처 원칙 (Core Architecture Principles)
 
-본 시스템의 AI 모델(`claude-haiku-4-5`)은 최종 결과물을 직접 만드는 것이 아니라, 타겟 AI(ChatGPT·Claude 또는 이미지/영상/음악 생성 AI)를 제어할 **프롬프트를 생성하는 컴파일러**로 동작합니다.
+본 시스템의 생성 AI(`claude-sonnet-4-6`)는 최종 결과물을 직접 만드는 것이 아니라, 타겟 AI(ChatGPT·Claude 또는 이미지/영상/음악 생성 AI)를 제어할 **프롬프트를 생성하는 컴파일러**로 동작합니다. (초안 모달리티 분류에는 경량 `claude-haiku-4-5`를 사용합니다.)
 
 * **모달리티 자동 감지:** 초안을 먼저 분류기(Haiku)로 `text`/`image`/`video`/`music` 중 하나로 분류하고, 그 모달리티에 맞는 차원·스니펫·시스템 프롬프트를 적용합니다. (분류 실패 시 `text`로 폴백.)
 * **역할의 분리 (Decoupling):**
@@ -140,8 +140,10 @@ const TIER_THRESHOLDS: { maxScore: number; tier: number }[] = [
 
 `buildStaticSystemPrompt(language, modality)`가 모달리티에 따라 분기합니다. (원문은 `buildTextSystemPrompt` / `buildMediaSystemPrompt` 참조.)
 
-* **text → `buildTextSystemPrompt(language)`** — "B2B 프롬프트 엔지니어". 생성하는 `content`는 마크다운·XML로 구조화된 *지시서* 이며, 제약 조건은 `<Constraints>` 태그 안에 "타겟 AI가 지켜야 할 규칙"으로 주입합니다(문체 분리·번역·독립성 원칙 명시).
-* **image/video/music → `buildMediaSystemPrompt(language, modality)`** — "생성형 미디어 프롬프트 엔지니어". 생성하는 `content`는 타겟 생성 AI에 *그대로 붙여넣는 묘사형 프롬프트 그 자체* 입니다(지시서/메타 래핑 금지). 모달리티별 핵심 요소(피사체·화풍·조명·카메라·템포 등)를 자연스럽게 포함합니다.
+* **계획 우선(plan-then-write)**: 두 분기 모두 각 후보마다 `content`보다 먼저 `approach`(1~2문장 설계 메모)를 작성하도록 지시합니다. 구조화 출력에서 모델이 곧장 본문을 뱉는 대신 경량 계획 단계를 거치게 해 품질을 높입니다. `approach`는 사용자 응답에 노출되지 않습니다.
+* **text → `buildTextSystemPrompt(language)`** — "B2B 프롬프트 엔지니어". 생성하는 `content`는 마크다운·XML로 구조화된 *지시서* 이며, 고정 골격 `<Role>` / `<Context>` / `<Task>` / `<Constraints>` / `<OutputFormat>`을 따릅니다. 제약 조건은 `<Constraints>` 안에 "타겟 AI가 지켜야 할 규칙"으로 주입합니다(문체 분리·번역·독립성 원칙 명시). 고품질 예시 1개를 few-shot 앵커로 포함합니다.
+* **image/video/music → `buildMediaSystemPrompt(language, modality)`** — "생성형 미디어 프롬프트 엔지니어". 생성하는 `content`는 타겟 생성 AI에 *그대로 붙여넣는 묘사형 프롬프트 그 자체* 입니다(지시서/메타 래핑 금지). 모달리티별 핵심 요소(피사체·화풍·조명·카메라·템포 등)를 자연스럽게 포함하며, 모달리티별 예시 1개(`MEDIA_GUIDE.example`, 영어)를 스타일 앵커로 포함합니다.
+* **의도 보존 & 기본 품질**: 두 분기 모두 (4) 초안의 구체적 개체·고유명사·수치·핵심 요청을 누락/일반화하지 말 것, (5) 제약이 비거나 중립이어도 프롬프트 엔지니어링 베스트 프랙티스를 항상 적용할 것을 규칙으로 명시합니다.
 * **출력 언어**:
     * `text` content는 **UI 언어를 따름** — `ko`면 한국어로 작성하고 `<Constraints>`에 "한국어로 응답하십시오"를, `en`이면 영어로 작성하고 "Respond in English"를 포함.
     * `image`/`video`/`music` content는 **UI 언어와 무관하게 영어**(해당 도구가 가장 잘 이해하는 언어).
@@ -165,8 +167,8 @@ const TIER_THRESHOLDS: { maxScore: number; tier: number }[] = [
 2. **병렬 실행:** 모달리티 분류(Haiku) + `users`(`job_role`, `primary_purpose`) 조회 + `user_preferences` 조회를 단일 `Promise.all`로 동시 실행. (DB 조회는 `userId`만 쓰므로 분류와 의존성 없음.)
 3. **Parse & Map:** 해당 모달리티 차원만 `prefKey`로 매핑(기본 1.0) → `getTier`로 `exactTiers` 산출 → `generateRandomVariantTiers`로 `variantATiers`/`variantBTiers` 생성.
 4. **Assemble:** `buildStaticSystemPrompt(lang, modality)`(정적) + `buildDynamicContext(...)`(동적) 조립.
-5. **AI Request:** `@ai-sdk/anthropic`의 `generateText` 호출 (모델 `claude-haiku-4-5`, `Output.object(promptGenerationSchema)`로 JSON 무결성 강제).
-6. **Guard & Inject:** 후보 개수 가드(슬롯 기반 매핑)로 각 후보 `metadata`에 `targetModality`/`variant`/`appliedTiers`/`tierDescription` 주입.
+5. **AI Request:** `@ai-sdk/anthropic`의 `generateText` 호출 (모델 `claude-sonnet-4-6`, `temperature: 0.8`, `maxOutputTokens: 8192`, `Output.object(promptGenerationSchema)`로 JSON 무결성 강제). 각 후보는 `content`보다 먼저 `approach`(설계 메모) 필드를 채워 경량 계획 단계를 거친다(응답에는 노출되지 않음).
+6. **Guard & Inject:** 후보 개수 가드(슬롯 기반 매핑)로 각 후보 `metadata`에 `targetModality`/`variant`/`appliedTiers`/`tierDescription` 주입(`approach`는 제외).
 7. **Persist:** `prompt_logs`에 후보별 1행 삽입(동일 `session_id` 공유), 삽입된 `logId`를 `variant`로 매핑.
 8. **Return:** `{ requestId, candidates }`.
 

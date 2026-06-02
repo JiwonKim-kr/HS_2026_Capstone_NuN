@@ -395,6 +395,7 @@ async function classifyModality(draft: string): Promise<Modality> {
       output: Output.object({ schema: modalityClassificationSchema }),
       system: CLASSIFY_SYSTEM_PROMPT,
       prompt: draft,
+      temperature: 0, // 분류는 결정적이어야 하므로 온도 0
     });
     return result.output.modality as Modality;
   } catch (error) {
@@ -410,48 +411,96 @@ function buildTextSystemPrompt(language: 'ko' | 'en'): string {
 You are a world-class B2B Prompt Engineer who perfectly controls target AIs (ChatGPT, Claude, etc.).
 
 # Objective
-Analyze the user's rough [Draft Prompt], combine it with the [Dynamic Constraints] reflecting the user's preferences, and generate 3 highly structured (using Markdown and XML tags) prompt candidates that the target AI can best read and execute.
+Analyze the user's rough [Draft Prompt], combine it with the [Per-Candidate Constraints], and generate 3 highly structured prompt candidates (Markdown + XML tags) that the target AI can best read and execute.
+
+# How to work (for EACH candidate)
+1. First fill the 'approach' field: 1-2 sentences planning how you will design THIS candidate (a private design note, never shown to the user).
+2. Then fill the 'content' field with the finished prompt.
+
+# Required structure for 'content' (use Markdown + these XML tags)
+- <Role>: One sentence defining the persona the target AI should adopt.
+- <Context>: The background (job/purpose) and the situation inferred from the draft.
+- <Task>: The core task for the target AI, as an explicit instruction that faithfully reflects the draft's intent.
+- <Constraints>: List the [Per-Candidate Constraints] as rules the target AI must follow, plus the response-language directive (Rule 8).
+- <OutputFormat>: Concretely specify the expected output shape (structure, length unit, headers, etc.).
 
 # 🚨 Critical Rules
-1. Style Separation Principle: The prompt text you generate must be a dry, analytical instruction document for a machine (the target AI) — not a beautifully written piece for a human reader.
-2. Constraint Translation: Do NOT apply the [Dynamic Constraints] provided below to your own writing style. These constraints must be inserted as explicit rules inside the \`<Constraints>\` tag within each generated prompt, as directives the target AI must follow.
-3. Variable Orthogonality: In the prompts you generate, explicitly state to the target AI that each constraint operates completely independently. Expert vocabulary (Level) does not imply a serious tone (Tone) or a long response (Density) — each attribute is mutually exclusive.
-4. Output Format Enforcement: You MUST respond only in the specified JSON format.
-5. Output Language: Write the body content (content) of all 3 generated prompts in **English**, so the target AI can best understand them.
-6. Response Language Directive: Inside the \`<Constraints>\` section of every generated prompt, you MUST include the following instruction verbatim: "Respond in English."
+1. Style Separation: the prompt you generate is a dry instruction document for a machine (the target AI), not a beautifully written piece for a human.
+2. Constraint Translation: do NOT apply the [Per-Candidate Constraints] to your own writing; insert them inside \`<Constraints>\` as explicit rules the target AI must follow.
+3. Variable Orthogonality: explicitly state that each constraint operates independently (mutually exclusive). Expert vocabulary (Level) does not imply a serious Tone or a long response (Density).
+4. Preserve Intent: never drop or arbitrarily generalize the concrete entities, proper nouns, numbers, or the core request found in the draft.
+5. Baseline Quality: even when constraints are empty or neutral, always apply prompt-engineering best practices — a clear role, an explicit task, a defined output format, and removal of ambiguity.
+6. Output Format Enforcement: respond only in the specified JSON format.
+7. Output Language: write the 'content' of all 3 prompts in **English**.
+8. Response Language Directive: inside every prompt's \`<Constraints>\`, include verbatim: "Respond in English."
 
 # Generation Strategy
-Generate 3 prompts by applying the constraints below exactly to each candidate.
-- Candidate 1 (Main): Apply [Candidate 1 Constraints] only. This candidate is shown to the user first.
-- Candidate 2 (Variant A): Apply [Candidate 2 Constraints] only.
-- Candidate 3 (Variant B): Apply [Candidate 3 Constraints] only.
-Each candidate must strictly follow only its own assigned constraints and must not mix constraints from other candidates.`;
+- Candidate 1 (Main): apply [Candidate 1 Constraints] only. Shown to the user first.
+- Candidate 2 (Variant A): apply [Candidate 2 Constraints] only.
+- Candidate 3 (Variant B): apply [Candidate 3 Constraints] only.
+Each candidate follows only its own constraints and must be clearly distinct from the others.
+
+# Example (skeleton reference for 'content' — adapt to the actual draft and constraints)
+<Role>You are a senior IT product marketer with 10 years of experience.</Role>
+<Context>The user is a SaaS startup marketer preparing a launch blog post for a new feature.</Context>
+<Task>Based on the feature description below, draft the outline for the launch blog post: [feature description].</Task>
+<Constraints>
+- [Information Density]: summarize only the essentials in 3 bullet points or fewer.
+- Respond in English.
+- Each constraint applies independently.
+</Constraints>
+<OutputFormat>3-5 top-level sections as a numbered list.</OutputFormat>`;
   }
 
   return `# Role
 당신은 타겟 AI(ChatGPT, Claude 등)를 완벽하게 통제하는 최고 수준의 'B2B 프롬프트 엔지니어'입니다.
 
 # Objective
-사용자가 입력한 거친 [초안 프롬프트]를 분석하고, 사용자의 취향을 반영한 [동적 제약 조건]을 결합하여, 타겟 AI가 읽고 실행하기 가장 좋은 고도로 구조화된(마크다운 및 XML 태그 활용) 프롬프트 후보군 3개를 생성하십시오.
+사용자가 입력한 거친 [초안 프롬프트]를 분석하고, [후보별 제약 조건]을 결합하여, 타겟 AI가 읽고 실행하기 가장 좋은 고도로 구조화된(마크다운 + XML 태그) 프롬프트 후보 3개를 생성하십시오.
+
+# 작업 방식 (각 후보마다)
+1. 먼저 'approach' 필드를 채우십시오: 이 후보를 어떻게 설계할지 1~2문장으로 계획합니다 (사용자에게 보이지 않는 설계 메모).
+2. 그다음 'content' 필드에 완성된 프롬프트 전문을 작성하십시오.
+
+# 'content' 필수 구조 (마크다운 + 아래 XML 태그 사용)
+- <Role>: 타겟 AI가 맡을 역할/페르소나를 한 문장으로 정의.
+- <Context>: 배경 맥락(직업/목적)과 초안에서 파악한 상황.
+- <Task>: 타겟 AI가 수행할 핵심 작업을, 초안의 의도를 충실히 반영한 명시적 지시문으로.
+- <Constraints>: [후보별 제약 조건]을 타겟 AI가 지켜야 할 규칙으로 나열 + 응답 언어 지시(Rule 8) 포함.
+- <OutputFormat>: 기대 출력 형식(구조, 길이 단위, 머리말 등)을 구체적으로 명시.
 
 # 🚨 Critical Rules (절대 규칙)
-1. 문체 분리의 원칙: 당신이 생성해 내는 프롬프트 문장 자체는 인간이 읽기 좋은 예쁜 글이 아니라, 기계(타겟 AI)가 읽기 좋은 건조하고 분석적인 지시서여야 합니다.
-2. 제약 조건의 번역: 아래 제공되는 [동적 제약 조건]을 당신의 문체에 적용하지 마십시오. 이 조건들은 당신이 생성하는 프롬프트 내부의 \`<Constraints>\` 태그 안에 '타겟 AI가 지켜야 할 명시적 규칙'으로 삽입되어야 합니다.
-3. 변수 독립성(Orthogonality) 유지: 당신이 생성하는 프롬프트 내부의 각 제약 조건은 철저하게 독립적으로 작동해야 한다고 타겟 AI에게 명시하십시오. 전문적인 어휘(Level)가 진지한 어투(Tone)나 긴 글(Density)을 의미하지 않으며, 각 속성은 서로 침범하지 않는다는 상호 배제(Mutually Exclusive) 원칙을 포함하십시오.
-4. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답해야 합니다.
-5. 출력 언어: 생성하는 3개의 프롬프트 본문 내용(content)은 사용자 인터페이스 언어에 맞게 반드시 **한국어(Korean)**로 작성하십시오.
-6. Response Language Directive: Inside the \`<Constraints>\` section of every generated prompt, you MUST include the following instruction verbatim: "한국어로 응답하십시오. (Respond in Korean)"
+1. 문체 분리의 원칙: 당신이 생성하는 프롬프트는 인간이 읽는 예쁜 글이 아니라, 기계(타겟 AI)가 읽는 건조한 지시서입니다.
+2. 제약 조건의 번역: [후보별 제약 조건]을 당신의 문체에 적용하지 말고, \`<Constraints>\` 안에 '타겟 AI가 지켜야 할 명시적 규칙'으로 삽입하십시오.
+3. 변수 독립성(Orthogonality): 각 제약은 독립적으로 작동함을(상호 배제) 타겟 AI에게 명시하십시오. 전문적인 어휘(Level)가 진지한 어투(Tone)나 긴 글(Density)을 의미하지 않습니다.
+4. 초안 의도 보존: 초안에 담긴 구체적 개체·고유명사·수치·핵심 요청을 절대 누락하거나 임의로 일반화하지 마십시오.
+5. 기본 품질 보장: 제약 조건이 비어 있거나 중립이어도, 명확한 역할·명시적 작업·정의된 출력 형식·모호함 제거 같은 프롬프트 엔지니어링 베스트 프랙티스를 항상 적용하십시오.
+6. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답하십시오.
+7. 출력 언어: 생성하는 3개 프롬프트의 content는 반드시 **한국어(Korean)**로 작성하십시오.
+8. Response Language Directive: 모든 프롬프트의 \`<Constraints>\`에 "한국어로 응답하십시오. (Respond in Korean)"를 그대로 포함하십시오.
 
 # Generation Strategy (후보군 3개 생성 전략)
-아래 [후보별 제약 조건]을 각 후보에 정확히 적용하여 프롬프트 3개를 생성하십시오.
 - Candidate 1 (메인): [후보 1 제약 조건]만 적용. 이 후보가 사용자에게 가장 먼저 표시됩니다.
 - Candidate 2 (변형 A): [후보 2 제약 조건]만 적용.
 - Candidate 3 (변형 B): [후보 3 제약 조건]만 적용.
-각 후보는 반드시 자신에게 할당된 제약 조건만을 따르고, 다른 후보의 제약 조건과 혼합하지 마십시오.`;
+각 후보는 자신에게 할당된 제약 조건만 따르며, 서로 뚜렷이 구별되어야 합니다.
+
+# 예시 (content 골격 참고용 — 실제 초안/제약에 맞게 변형할 것)
+<Role>너는 10년차 IT 프로덕트 마케터다.</Role>
+<Context>사용자는 SaaS 스타트업 마케터로, 신규 기능 출시 블로그 글을 준비 중이다.</Context>
+<Task>아래 기능 설명을 바탕으로 출시 블로그 글의 목차를 작성하라: [기능 설명].</Task>
+<Constraints>
+- [정보 밀도]: 핵심만 3줄 이내의 개조식으로 요약할 것.
+- 한국어로 응답하십시오. (Respond in Korean)
+- 각 제약은 독립적으로 적용된다.
+</Constraints>
+<OutputFormat>최상위 목차 3~5개를 번호 매김 목록으로.</OutputFormat>`;
 }
 
-const MEDIA_GUIDE: Record<'image' | 'video' | 'music', { ko: { role: string; elements: string }; en: { role: string; elements: string } }> = {
+// example은 UI 언어와 무관하게 영어(미디어 도구가 가장 잘 이해하는 언어)로 둔다.
+const MEDIA_GUIDE: Record<'image' | 'video' | 'music', { example: string; ko: { role: string; elements: string }; en: { role: string; elements: string } }> = {
   image: {
+    example: 'A photorealistic close-up portrait of an elderly fisherman at golden hour, weathered skin texture, warm rim lighting, shallow depth of field, muted earthy palette, shot on 35mm, 3:2 aspect ratio.',
     ko: {
       role: '이미지 생성 AI(Midjourney, DALL·E, Stable Diffusion 등)',
       elements: '피사체(subject), 화풍/매체(style/medium), 구도(composition), 조명(lighting), 색감(color), 화질 묘사어(quality descriptors), 종횡비(aspect ratio)',
@@ -462,6 +511,7 @@ const MEDIA_GUIDE: Record<'image' | 'video' | 'music', { ko: { role: string; ele
     },
   },
   video: {
+    example: 'Cinematic tracking shot following a lone cyclist down a misty mountain road at dawn, slow dolly movement, soft volumetric light, calm contemplative mood, live-action realism, 10s duration, 16:9 aspect ratio.',
     ko: {
       role: '영상 생성 AI(Sora, Runway, Veo, Kling 등)',
       elements: '장면(scene), 피사체와 동작(subject & action), 카메라 움직임/샷(camera movement/shot), 조명(lighting), 분위기(mood), 모션 다이내믹(motion dynamics), 스타일(style), 길이(duration), 종횡비(aspect ratio)',
@@ -472,6 +522,7 @@ const MEDIA_GUIDE: Record<'image' | 'video' | 'music', { ko: { role: string; ele
     },
   },
   music: {
+    example: 'A warm lo-fi hip-hop track, around 80 BPM, mellow Rhodes piano with soft vinyl crackle, relaxed boom-bap drums, nostalgic late-night mood, instrumental, looping structure.',
     ko: {
       role: '음악 생성 AI(Suno, Udio 등)',
       elements: '장르(genre), 분위기(mood), 악기 편성(instrumentation), 템포/BPM(tempo), 곡 구조(structure), 보컬/연주 여부(vocal/instrumental)',
@@ -485,48 +536,67 @@ const MEDIA_GUIDE: Record<'image' | 'video' | 'music', { ko: { role: string; ele
 
 function buildMediaSystemPrompt(language: 'ko' | 'en', modality: 'image' | 'video' | 'music'): string {
   const guide = MEDIA_GUIDE[modality][language];
+  const example = MEDIA_GUIDE[modality].example;
 
   if (language === 'en') {
     return `# Role
 You are a world-class Generative Media Prompt Engineer specializing in ${guide.role}.
 
 # Objective
-Analyze the user's rough [Draft Prompt], combine it with the [Per-Candidate Constraints] reflecting the user's preferences, and generate 3 prompt candidates that can be pasted DIRECTLY into the target generative AI to produce the asset.
+Analyze the user's rough [Draft Prompt], combine it with the [Per-Candidate Constraints], and generate 3 prompt candidates that can be pasted DIRECTLY into the target generative AI to produce the asset.
+
+# How to work (for EACH candidate)
+1. First fill the 'approach' field: 1-2 sentences planning how you will design THIS candidate (a private design note, never shown to the user).
+2. Then fill the 'content' field with the ready-to-use descriptive prompt.
 
 # 🚨 Critical Rules
-1. Direct-Use Principle: The 'content' you generate MUST be the descriptive generative prompt ITSELF — the visual/auditory description the target AI should create. It is NOT an instruction document telling another chatbot "how to make" or "how to film/record" the asset. Never explain the process; describe the final result.
-2. No Meta-Wrapping: Do NOT add conversational framing, "Respond in..." directives, or chat-style instructions. Output only the kind of richly descriptive prompt these tools expect.
-3. Cover the Essentials: Each prompt should naturally weave in the relevant elements: ${guide.elements}.
-4. Constraint Embodiment: Apply the [Per-Candidate Constraints] by baking those stylistic attributes directly into the descriptive prompt's wording.
-5. Output Format Enforcement: You MUST respond only in the specified JSON format.
-6. Output Language: Write the 'content' of all 3 prompts in **English** (the language these tools understand best), even if the UI language differs.
+1. Direct-Use Principle: the 'content' MUST be the descriptive generative prompt ITSELF — the visual/auditory description the target AI should create. It is NOT an instruction document telling another chatbot how to make/film/record the asset. Describe the final result, not the process.
+2. No Meta-Wrapping: do NOT add conversational framing, "Respond in..." directives, or chat-style instructions. Output only the kind of richly descriptive prompt these tools expect.
+3. Cover the Essentials: weave in the relevant elements naturally: ${guide.elements}.
+4. Constraint Embodiment: bake the [Per-Candidate Constraints] directly into the descriptive wording.
+5. Preserve Intent: never drop or arbitrarily generalize the concrete subject, named entities, or core idea from the draft.
+6. Baseline Quality: even when constraints are empty or neutral, always produce a concrete, vivid, well-specified prompt (avoid vague one-liners).
+7. Output Format Enforcement: respond only in the specified JSON format.
+8. Output Language: write the 'content' of all 3 prompts in **English** (the language these tools understand best), even if the UI language differs.
 
 # Generation Strategy
-- Candidate 1 (Main): Apply [Candidate 1 Constraints] only. Shown to the user first.
-- Candidate 2 (Variant A): Apply [Candidate 2 Constraints] only.
-- Candidate 3 (Variant B): Apply [Candidate 3 Constraints] only.
-Each candidate must be a distinct, ready-to-use prompt following only its own assigned constraints.`;
+- Candidate 1 (Main): apply [Candidate 1 Constraints] only. Shown to the user first.
+- Candidate 2 (Variant A): apply [Candidate 2 Constraints] only.
+- Candidate 3 (Variant B): apply [Candidate 3 Constraints] only.
+Each candidate is a distinct, ready-to-use prompt following only its own assigned constraints.
+
+# Example (style reference for 'content' — adapt to the actual draft and constraints)
+${example}`;
   }
 
   return `# Role
 당신은 ${guide.role}를 전문으로 다루는 최고 수준의 '생성형 미디어 프롬프트 엔지니어'입니다.
 
 # Objective
-사용자가 입력한 거친 [초안 프롬프트]를 분석하고, 사용자의 취향을 반영한 [후보별 제약 조건]을 결합하여, 타겟 생성 AI에 **그대로 붙여넣으면 결과물이 바로 생성되는** 프롬프트 후보 3개를 생성하십시오.
+사용자가 입력한 거친 [초안 프롬프트]를 분석하고, [후보별 제약 조건]을 결합하여, 타겟 생성 AI에 **그대로 붙여넣으면 결과물이 바로 생성되는** 프롬프트 후보 3개를 생성하십시오.
+
+# 작업 방식 (각 후보마다)
+1. 먼저 'approach' 필드를 채우십시오: 이 후보를 어떻게 설계할지 1~2문장으로 계획합니다 (사용자에게 보이지 않는 설계 메모).
+2. 그다음 'content' 필드에 즉시 사용 가능한 묘사형 프롬프트를 작성하십시오.
 
 # 🚨 Critical Rules (절대 규칙)
-1. 즉시 사용의 원칙: 당신이 생성하는 'content'는 타겟 AI가 만들어 낼 결과물을 묘사하는 **'묘사형 생성 프롬프트 그 자체'**여야 합니다. 다른 챗봇에게 "어떻게 만드는지" 또는 "어떻게 촬영/녹음하는지" 설명하는 지시서가 절대 아닙니다. 제작 '과정'을 설명하지 말고, 완성된 '결과물'을 묘사하십시오.
+1. 즉시 사용의 원칙: 'content'는 타겟 AI가 만들어 낼 결과물을 묘사하는 **'묘사형 생성 프롬프트 그 자체'**여야 합니다. 다른 챗봇에게 만드는/촬영하는/녹음하는 방법을 설명하는 지시서가 아닙니다. 제작 '과정'이 아니라 완성된 '결과물'을 묘사하십시오.
 2. 메타 래핑 금지: 대화체 서두나 "~로 응답하십시오" 같은 지시, 챗봇식 안내를 추가하지 마십시오. 해당 도구가 기대하는 풍부한 묘사형 프롬프트만 출력하십시오.
-3. 핵심 요소 포함: 각 프롬프트에는 다음 요소들을 자연스럽게 녹여내십시오: ${guide.elements}.
-4. 제약 조건의 체화: [후보별 제약 조건]의 스타일 속성을 묘사형 프롬프트의 표현 자체에 직접 반영하십시오.
-5. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답해야 합니다.
-6. 출력 언어: 생성하는 3개 프롬프트의 'content'는 (UI 언어와 무관하게) 해당 도구가 가장 잘 이해하는 **영어(English)**로 작성하십시오.
+3. 핵심 요소 포함: 다음 요소들을 자연스럽게 녹여내십시오: ${guide.elements}.
+4. 제약 조건의 체화: [후보별 제약 조건]을 묘사형 표현 자체에 직접 반영하십시오.
+5. 초안 의도 보존: 초안의 구체적 피사체·고유명사·핵심 아이디어를 누락하거나 임의로 일반화하지 마십시오.
+6. 기본 품질 보장: 제약이 비어 있거나 중립이어도 구체적이고 생생하며 잘 명세된 프롬프트를 작성하십시오(막연한 한 줄 금지).
+7. 출력 형식 강제: 반드시 지정된 JSON 규격으로만 응답해야 합니다.
+8. 출력 언어: 생성하는 3개 프롬프트의 'content'는 (UI 언어와 무관하게) 영어(English)로 작성하십시오.
 
 # Generation Strategy (후보군 3개 생성 전략)
 - Candidate 1 (메인): [후보 1 제약 조건]만 적용. 사용자에게 가장 먼저 표시됩니다.
 - Candidate 2 (변형 A): [후보 2 제약 조건]만 적용.
 - Candidate 3 (변형 B): [후보 3 제약 조건]만 적용.
-각 후보는 자신에게 할당된 제약만 따른, 서로 구별되는 즉시 사용 가능한 프롬프트여야 합니다.`;
+각 후보는 자신에게 할당된 제약만 따른, 서로 구별되는 즉시 사용 가능한 프롬프트여야 합니다.
+
+# 예시 (content 스타일 참고용 — 실제 초안/제약에 맞게 변형할 것)
+${example}`;
 }
 
 function buildStaticSystemPrompt(language: 'ko' | 'en', modality: Modality): string {
@@ -639,10 +709,13 @@ export const generatePromptCandidates = async (
 
   try {
     const result = await generateText({
-      model: anthropic('claude-haiku-4-5'),
+      // 메인 생성은 품질이 핵심이므로 Sonnet 사용 (분류기는 Haiku 유지).
+      model: anthropic('claude-sonnet-4-6'),
       output: Output.object({ schema: promptGenerationSchema }),
       system: buildStaticSystemPrompt(lang, modality),
       prompt: dynamicContext,
+      temperature: 0.8,        // 후보 3종의 다양성 확보
+      maxOutputTokens: 8192,   // 후보 3개 × (approach + 구조화 content) 잘림 방지
     });
 
     // 후보 개수 가드 — LLM이 정확히 3개를, 할당 순서대로 반환한다는 보장은 없다.
@@ -669,10 +742,11 @@ export const generatePromptCandidates = async (
 
     const candidates = slots.slice(0, rawCandidates.length).map((slot, i) => {
       const c = rawCandidates[i];
+      // approach는 모델의 내부 설계 메모이므로 응답에서 제외하고 candidateId/content만 노출한다.
       return {
-        ...c,
+        candidateId: c.candidateId,
+        content: c.content,
         metadata: {
-          ...c.metadata,
           targetModality: modality,
           variant: slot.variant,
           appliedTiers: slot.tiers,

@@ -21,9 +21,6 @@ export const promptCandidateSchema = z.object({
   logId: z.string().uuid().optional().describe('DB에 저장된 prompt_logs ID'),
   content: z.string().describe('최적화된 프롬프트 내용'),
   metadata: z.object({
-    tone: z.string().optional(),
-    format: z.string().optional(),
-    length: z.string().optional(),
     targetModality: targetModalitySchema.optional().describe('감지된 타겟 AI 모달리티'),
     variant: z.enum(['exact', 'variant_a', 'variant_b']).optional(),
     tierDescription: z.string().optional(),
