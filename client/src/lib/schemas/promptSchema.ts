@@ -38,7 +38,14 @@ export type PromptCandidateType = z.infer<typeof promptCandidateSchema>;
 // 프론트엔드에서 받게 될 AI의 최종 응답 스키마 구조
 export const generatePromptResponseSchema = z.object({
   requestId: z.string().uuid().describe('이번 생성 요청의 고유 ID'),
-  candidates: z.array(promptCandidateSchema),
+  candidates: z.array(promptCandidateSchema).length(3).describe('정확히 3개의 프롬프트 후보군'),
+});
+
+// AI SDK Output.object에 주입하는 스키마 (requestId 제외)
+// ※ Anthropic Structured Output API는 배열 minItems를 0 또는 1만 지원하므로
+//   .length(3) 미사용 — 3개 생성은 시스템 프롬프트 CRITICAL 규칙으로 강제
+export const aiOutputSchema = z.object({
+  candidates: z.array(promptCandidateSchema).describe('Exactly 3 prompt candidates — no more, no less'),
 });
 
 // LLM이 실제로 생성하는 부분만 담은 스키마.
