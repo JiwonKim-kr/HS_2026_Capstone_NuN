@@ -15,7 +15,7 @@ export function SelectableCard({ label, iconSrc, iconNode, isSelected, onClick, 
       type="button"
       onClick={onClick}
       style={{ minHeight: height }}
-      className={`flex flex-col items-center justify-start gap-[6px] px-[12px] py-[14px] rounded-[12px] border-2 transition-all duration-200 w-full ${
+      className={`flex flex-col items-center justify-center gap-[6px] px-[12px] py-[14px] rounded-[12px] border-2 transition-all duration-200 w-full ${
         isSelected
           ? 'bg-white border-[#003e93] shadow-[0px_1px_4px_0px_rgba(0,62,147,0.1)]'
           : 'bg-[#f2f4f6] border-[rgba(0,0,0,0)] hover:bg-[#e9ecef]'
