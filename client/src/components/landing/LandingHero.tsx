@@ -27,7 +27,7 @@ export function LandingHero() {
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setError("이메일 또는 비밀번호가 올바르지 않습니다.");
@@ -35,7 +35,13 @@ export function LandingHero() {
       return;
     }
 
-    router.push("/dashboard");
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_onboarded')
+      .eq('id', data.user.id)
+      .maybeSingle();
+
+    router.push(profile?.is_onboarded === true ? '/dashboard' : '/onboarding');
   };
 
   return (

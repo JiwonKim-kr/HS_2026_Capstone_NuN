@@ -1,17 +1,45 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Globe, ShieldCheck, AlertTriangle, ChevronDown } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { Language } from "@/lib/i18n/translations";
 import { McpApiKeysSection } from "./McpApiKeysSection";
 import { privacyPolicy, PolicyParagraph } from "@/lib/legal/privacyPolicy";
+import { supabase } from "@/lib/supabase/client";
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useTranslation();
+  const router = useRouter();
+  const [deleting, setDeleting] = useState(false);
 
-  const handleDeleteAccount = () => {
-    alert("계정 영구 삭제 로직 (TODO: 연동 필요)");
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      language === 'ko'
+        ? '정말로 계정을 영구 삭제하시겠습니까?\n모든 데이터가 복구 불가능하게 삭제됩니다.'
+        : 'Are you sure you want to permanently delete your account?\nAll data will be deleted and cannot be recovered.'
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch('/api/user/delete', { method: 'DELETE' });
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        alert(language === 'ko' ? '계정 삭제에 실패했습니다. 다시 시도해주세요.' : 'Failed to delete account. Please try again.');
+        return;
+      }
+
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch {
+      alert(language === 'ko' ? '네트워크 오류가 발생했습니다.' : 'A network error occurred.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -133,9 +161,12 @@ export default function SettingsPage() {
 
             <button
               onClick={handleDeleteAccount}
-              className="bg-[#ba1a1a] hover:bg-[#93000a] text-white text-[14px] h-[40px] px-[24px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-fit transition-colors flex items-center justify-center"
+              disabled={deleting}
+              className="bg-[#ba1a1a] hover:bg-[#93000a] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] h-[40px] px-[24px] rounded-[8px] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] w-fit transition-colors flex items-center justify-center"
             >
-              {language === 'ko' ? '계정 영구 삭제' : 'Delete Account Permanently'}
+              {deleting
+                ? (language === 'ko' ? '삭제 중...' : 'Deleting...')
+                : (language === 'ko' ? '계정 영구 삭제' : 'Delete Account Permanently')}
             </button>
           </div>
         </section>

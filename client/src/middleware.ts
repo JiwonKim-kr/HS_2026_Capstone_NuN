@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // 인증이 필요한 경로 패턴 (/onboarding은 회원가입 직후 세션 없이 접근 가능해야 하므로 제외)
 const PROTECTED_PAGE_PATHS = ["/dashboard", "/profile"];
-const PROTECTED_API_PATHS = ["/api/prompts", "/api/mcp-keys"];
+const PROTECTED_API_PATHS = ["/api/prompts", "/api/mcp-keys", "/api/user"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -58,5 +58,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/api/prompts/:path*", "/api/mcp-keys/:path*"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/api/prompts/:path*", "/api/mcp-keys/:path*", "/api/user/:path*"],
 };
