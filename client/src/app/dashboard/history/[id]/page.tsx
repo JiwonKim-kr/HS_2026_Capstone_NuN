@@ -1,14 +1,16 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useMemo } from "react";
 import { Edit2, ChevronLeft, ChevronRight, ThumbsUp, Check, Copy } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useTranslation } from "@/lib/i18n/useTranslation";
+import { useTranslatedPrompts } from "@/lib/hooks/useTranslatedPrompts";
 
 type Candidate = {
   candidateId: string;
   logId: string;
   content: string;
+  translatedPrompt?: string | null;
   metadata: any;
   isLiked: boolean;
 };
@@ -27,14 +29,31 @@ export default function HistoryDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { id } = use(params);
-  
+
   const [data, setData] = useState<HistoryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedStatus, setLikedStatus] = useState<Record<string, boolean>>({});
+  // 표시 전용 번역: 미디어 content는 영어로 생성됨 → 한국어 UI일 때만 번역해서 보여줌(복사는 원문 유지).
+  const [showOriginalMap, setShowOriginalMap] = useState<Record<string, boolean>>({});
+
+  const historyCandidates = data?.candidates ?? [];
+  // 저장된 번역본(translated_prompt)을 시드로 전달 → 있으면 재번역 없이 즉시 표시.
+  const seedTranslations = useMemo(() => {
+    const seed: Record<string, string> = {};
+    for (const c of historyCandidates) {
+      if (c.translatedPrompt) seed[c.candidateId] = c.translatedPrompt;
+    }
+    return seed;
+  }, [historyCandidates]);
+  const { translations, pending: translating } = useTranslatedPrompts(
+    historyCandidates,
+    language,
+    seedTranslations
+  );
 
   useEffect(() => {
     if (!id) return;
@@ -199,6 +218,12 @@ export default function HistoryDetailPage({
             const isLiked = likedStatus[candidate.candidateId];
             const isCopied = copiedId === candidate.candidateId;
 
+            // 표시 전용: 미디어 content는 영어이므로 한국어 UI면 번역본을 보여준다 (복사는 원문 candidate.content 유지)
+            const isMediaKo = language === 'ko' && !!candidate.metadata?.targetModality && candidate.metadata.targetModality !== 'text';
+            const translated = translations[candidate.candidateId];
+            const showingOriginal = showOriginalMap[candidate.candidateId] ?? false;
+            const displayContent = isMediaKo && translated && !showingOriginal ? translated : candidate.content;
+
             return (
               <div
                 key={candidate.candidateId}
@@ -225,9 +250,26 @@ export default function HistoryDetailPage({
                   </div>
                 </div>
 
+                {isMediaKo && (
+                  <div className="flex items-center gap-2 mb-2 text-xs">
+                    {translating[candidate.candidateId] && !translated ? (
+                      <span className="text-[#757684]">한국어 번역 중…</span>
+                    ) : translated ? (
+                      <button
+                        onClick={() => setShowOriginalMap(prev => ({ ...prev, [candidate.candidateId]: !showingOriginal }))}
+                        className="text-[#2b3896] hover:underline"
+                      >
+                        {showingOriginal ? '🌐 한국어 번역 보기' : '🌐 영어 원문 보기'}
+                      </button>
+                    ) : (
+                      <span className="text-[#a0a0a0]">번역 실패 · 원문 표시</span>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex-1 overflow-y-auto pr-2 mb-6">
                   <p className="text-[13px] md:text-[16px] text-[#454652] leading-[22px] md:leading-[28px] whitespace-pre-wrap">
-                    {candidate.content}
+                    {displayContent}
                   </p>
                 </div>
 

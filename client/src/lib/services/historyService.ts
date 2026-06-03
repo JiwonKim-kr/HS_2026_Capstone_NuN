@@ -38,7 +38,7 @@ export const getUserSessions = async (userId: string) => {
 export const getSessionDetails = async (sessionId: string, userId: string) => {
   const { data, error } = await supabase
     .from('prompt_logs')
-    .select('id, session_id, user_id, original_input, chosen_prompt, chosen_metadata, is_liked, created_at')
+    .select('id, session_id, user_id, original_input, chosen_prompt, translated_prompt, chosen_metadata, is_liked, created_at')
     .eq('session_id', sessionId)
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
@@ -61,6 +61,8 @@ export const getSessionDetails = async (sessionId: string, userId: string) => {
     candidateId: row.chosen_metadata.variant || Math.random().toString(36).substr(2, 9),
     logId: row.id,
     content: row.chosen_prompt,
+    // 미디어 한국어 표시 번역본(없으면 null) — 히스토리에서 재번역 없이 그대로 표시.
+    translatedPrompt: row.translated_prompt ?? null,
     metadata: row.chosen_metadata,
     isLiked: row.is_liked
   }));
