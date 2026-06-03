@@ -18,19 +18,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/?error=auth_callback_error`);
   }
 
-  // users 테이블 조회로 신규/기존 사용자 판별
-  // 온보딩을 완료한 사용자만 users 테이블에 row가 존재한다
-  const { data: existingUser } = await supabase
+  // 온보딩 완료 여부로 분기.
+  // 주의: auth.users INSERT 시 트리거(on_auth_user_created → handle_new_user)가
+  // public.users row를 자동 생성하므로 "row 존재"는 온보딩 완료 신호가 될 수 없다.
+  // 실제 완료 플래그 is_onboarded 로 판별한다(온보딩 완료 시 true 세팅).
+  const { data: profile } = await supabase
     .from('users')
-    .select('id')
+    .select('is_onboarded')
     .eq('id', data.user.id)
-    .single();
+    .maybeSingle();
 
-  if (existingUser) {
-    // 기존 사용자 → 대시보드로 이동
+  if (profile?.is_onboarded === true) {
+    // 온보딩 완료 사용자 → 대시보드로 이동
     return NextResponse.redirect(`${origin}/dashboard`);
-  } else {
-    // 신규 구글 사용자 → 온보딩으로 이동
-    return NextResponse.redirect(`${origin}/onboarding`);
   }
+  // 신규/미완료 사용자 → 온보딩으로 이동
+  return NextResponse.redirect(`${origin}/onboarding`);
 }

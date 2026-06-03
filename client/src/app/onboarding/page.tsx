@@ -40,6 +40,7 @@ export default function OnboardingPage() {
             job_role: job,
             primary_purpose: selectedPurposes.join(","),
             preferred_style: selectedStyle,
+            is_onboarded: true,
           }, { onConflict: "id" });
 
         if (error) {
