@@ -21,6 +21,16 @@ export function prefKey(modality: Modality, dimension: string): string {
   return modality === 'text' ? dimension : `${modality}.${dimension}`;
 }
 
+// 미디어(image/video/music) 개인화 모델 상수.
+// 미디어는 절대 tier가 아니라 "주제 baseline으로부터의 잔차(lean)"를 학습한다.
+// lean은 ±LEAN_CLAMP tier로 묶어 과업 적합성을 보장하면서 과한 일탈을 막는다.
+// (개인화 강도를 조절하는 튜닝 손잡이 — 데이터를 보고 키울 수 있다.)
+export const LEAN_CLAMP = 1;
+
+export function clampLean(lean: number): number {
+  return Math.min(LEAN_CLAMP, Math.max(-LEAN_CLAMP, lean));
+}
+
 export function isModality(value: unknown): value is Modality {
   return typeof value === 'string' && (MODALITIES as string[]).includes(value);
 }

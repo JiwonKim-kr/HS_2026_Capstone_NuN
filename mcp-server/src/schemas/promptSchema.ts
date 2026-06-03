@@ -26,6 +26,8 @@ export const promptCandidateSchema = z.object({
     variant: z.enum(['exact', 'variant_a', 'variant_b']).optional(),
     tierDescription: z.string().optional(),
     appliedTiers: z.record(z.string(), z.number()).optional(),
+    // 미디어(image/video/music) 주제 baseline tier. 잔차(lean) 학습용으로 저장. 텍스트 미사용.
+    baselineTiers: z.record(z.string(), z.number()).optional(),
   }),
 });
 

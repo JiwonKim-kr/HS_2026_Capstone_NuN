@@ -12,6 +12,7 @@ import {
   MODALITY_DISPLAY,
   DIMENSION_DISPLAY,
   prefKey,
+  LEAN_CLAMP,
 } from "@/lib/services/modality";
 
 export default function AnalyticsPage() {
@@ -46,9 +47,24 @@ export default function AnalyticsPage() {
     fetchPreferences();
   }, [user]);
 
-  // 가중치 미존재 시 1.0(중립) 기본값. 0~2.0 → 0~100%
+  // 텍스트(절대 가중치): 미존재 시 1.0(중립). 0~2.0 → 0~100%
   const pct = (category: string) =>
     isLoading ? 0 : Math.round(((weights[category] ?? 1.0) / 2.0) * 100);
+
+  // 미디어(잔차 lean): 미존재 시 0(주제 baseline 그대로). -LEAN_CLAMP~+LEAN_CLAMP.
+  const lean = (category: string) => (isLoading ? 0 : weights[category] ?? 0);
+  // lean → 중앙(50%) 기준 좌/우 다이버징 막대의 [left%, width%]
+  const leanBar = (category: string) => {
+    const ratio = Math.max(-1, Math.min(1, lean(category) / LEAN_CLAMP)); // -1..1
+    const half = Math.abs(ratio) * 50;
+    return ratio >= 0
+      ? { left: 50, width: half }
+      : { left: 50 - half, width: half };
+  };
+  const leanLabel = (category: string) => {
+    const v = lean(category);
+    return `${v >= 0 ? "+" : ""}${v.toFixed(1)}`;
+  };
 
   return (
     <div className="flex flex-col gap-[40px] items-start w-full max-w-[896px] py-[48px] mx-auto z-10 relative">
@@ -90,6 +106,8 @@ export default function AnalyticsPage() {
                 <div className="flex flex-col gap-8">
                   {MODALITY_DIMENSIONS[modality].map((dim) => {
                     const category = prefKey(modality, dim);
+                    const isText = modality === "text";
+                    const bar = leanBar(category);
                     return (
                       <div key={category} className="flex flex-col gap-2">
                         <div className="flex justify-between items-end">
@@ -100,15 +118,27 @@ export default function AnalyticsPage() {
                             </span>
                           </div>
                           <span className="text-[#2b3896] text-[18px] font-bold leading-none">
-                            {pct(category)}%
+                            {isText ? `${pct(category)}%` : leanLabel(category)}
                           </span>
                         </div>
-                        <div className="w-full h-3 bg-[#f2f4f6] rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-[#2b3896] rounded-full transition-all duration-1000 ease-in-out"
-                            style={{ width: `${pct(category)}%` }}
-                          />
-                        </div>
+                        {isText ? (
+                          // 텍스트: 절대 가중치 0~100% 막대
+                          <div className="w-full h-3 bg-[#f2f4f6] rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-[#2b3896] rounded-full transition-all duration-1000 ease-in-out"
+                              style={{ width: `${pct(category)}%` }}
+                            />
+                          </div>
+                        ) : (
+                          // 미디어: 주제 baseline(중앙) 기준 좌(약하게)/우(강하게) 다이버징 막대
+                          <div className="relative w-full h-3 bg-[#f2f4f6] rounded-full overflow-hidden">
+                            <div className="absolute left-1/2 top-0 h-full w-px bg-[#c5c5d4]" />
+                            <div
+                              className="absolute h-full bg-[#2b3896] transition-all duration-1000 ease-in-out"
+                              style={{ left: `${bar.left}%`, width: `${bar.width}%` }}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}

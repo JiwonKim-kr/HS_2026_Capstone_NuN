@@ -18,6 +18,14 @@ export function prefKey(modality: Modality, dimension: string): string {
   return modality === 'text' ? dimension : `${modality}.${dimension}`;
 }
 
+// 미디어 개인화: 절대 tier가 아니라 "주제 baseline 대비 잔차(lean)"를 학습한다.
+// lean은 ±LEAN_CLAMP tier로 묶는다. (client 사본과 동일 규칙)
+export const LEAN_CLAMP = 1;
+
+export function clampLean(lean: number): number {
+  return Math.min(LEAN_CLAMP, Math.max(-LEAN_CLAMP, lean));
+}
+
 export function isModality(value: unknown): value is Modality {
   return typeof value === 'string' && (MODALITIES as string[]).includes(value);
 }

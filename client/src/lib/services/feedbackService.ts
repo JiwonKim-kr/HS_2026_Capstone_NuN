@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Modality, isModality, prefKey } from '@/lib/services/modality';
+import { Modality, isModality, prefKey, clampLean } from '@/lib/services/modality';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -23,10 +23,12 @@ export const processFeedback = async (params: {
   targetLikeStatus: boolean;
 }) => {
   const modality: Modality = isModality(params.targetModality) ? params.targetModality : 'text';
-  // 1. Fetch current prompt_log to check if weight was already applied
+  const isMedia = modality !== 'text';
+  // 1. Fetch current prompt_log: 가중치 중복 적용 여부 + (미디어) 잔차 계산용 baseline.
+  //   baseline은 생성 시점에 저장된 값을 서버에서 읽어 클라이언트 위변조를 배제한다.
   const { data: logData, error: logError } = await supabase
     .from('prompt_logs')
-    .select('is_weight_applied')
+    .select('is_weight_applied, chosen_metadata')
     .eq('id', params.historyId)
     .single();
 
@@ -73,15 +75,30 @@ export const processFeedback = async (params: {
   // appliedTiers의 키(=해당 모달리티의 차원)만 순회. 카테고리는 모달리티 네임스페이스 적용.
   const dimensions = Object.keys(params.appliedTiers);
 
+  // 미디어 잔차 학습용 baseline (생성 시 저장값). 누락 시 중립(3)으로 안전 처리.
+  const baselineTiers: Record<string, number> =
+    (logData.chosen_metadata as any)?.baselineTiers ?? {};
+
   const existingRows = [];
   const newRows = [];
 
   for (const dim of dimensions) {
     const category = prefKey(modality, dim);
     const existingRow = existingPrefs.find(p => p.category === category);
-    const currentScore = existingRow ? existingRow.weight_score : 1.0;
-    const representativeScore = TIER_REPRESENTATIVE_SCORES[params.appliedTiers[dim]] ?? 1.0;
-    const newScore = (currentScore + representativeScore) / 2;
+
+    let newScore: number;
+    if (isMedia) {
+      // 잔차(lean) 학습: applied − baseline 방향으로 EMA. 기본 lean = 0.0.
+      //   서로 다른 주제(절대 tier가 정반대)라도 baseline 대비 같은 방향이면 누적 강화된다.
+      const currentLean = existingRow ? existingRow.weight_score : 0.0;
+      const residual = params.appliedTiers[dim] - (baselineTiers[dim] ?? 3);
+      newScore = clampLean((currentLean + residual) / 2);
+    } else {
+      // 텍스트: 기존 절대 가중치 EMA 유지. 기본 1.0.
+      const currentScore = existingRow ? existingRow.weight_score : 1.0;
+      const representativeScore = TIER_REPRESENTATIVE_SCORES[params.appliedTiers[dim]] ?? 1.0;
+      newScore = (currentScore + representativeScore) / 2;
+    }
 
     if (existingRow) {
       existingRows.push({

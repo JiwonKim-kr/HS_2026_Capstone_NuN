@@ -340,6 +340,11 @@ function shiftTier(tier: number, delta: number): number {
   return Math.min(MAX_TIER, Math.max(MIN_TIER, tier + delta));
 }
 
+// 실수 tier(예: baseline + lean)를 [MIN_TIER, MAX_TIER] 정수 tier로 스냅.
+function clampTier(value: number): number {
+  return Math.min(MAX_TIER, Math.max(MIN_TIER, Math.round(value)));
+}
+
 function getSnippetByTier(tier: number, snippets: SnippetMap): string {
   return snippets[tier] ?? '';
 }
@@ -382,33 +387,94 @@ function buildConstraintSet(modality: Modality, tiers: TierSet, language: 'ko' |
   return lines.length ? lines.join('\n') : fallback;
 }
 
-// ── 모달리티 자동 분류 ────────────────────────────────────────────────────────
+// ── 모달리티 자동 분류 + 주제 baseline 산출 ───────────────────────────────────
+// baseline은 "이 주제(과업)가 일반적으로 요구하는 tier"이며, 미디어 잔차(lean)
+// 학습의 기준점이 된다. 동적 키(z.record)는 Anthropic 구조화 출력이 거부하므로
+// 선택된 modality의 4개 차원에 대한 정수 4개를 '고정 순서 배열'로 받는다.
 const modalityClassificationSchema = z.object({
   modality: z.enum(['text', 'image', 'video', 'music']),
+  // 주의: Anthropic 구조화 출력은 array의 minItems로 0/1 외 값을 거부하므로
+  // .length(4) 등 길이 제약을 걸 수 없다. 개수는 코드에서 dims 순서로 매핑하고
+  // clampTier로 정수/범위(1~5)를 보정한다.
+  baseline: z
+    .array(z.number())
+    .describe(
+      "Exactly 4 baseline tiers (integers 1-5) the chosen modality's TASK typically calls for, " +
+      'in the exact dimension order listed in the system prompt. ' +
+      'Tier 3 = neutral/balanced. For "text", output [3,3,3,3].'
+    ),
   reason: z.string(),
 });
 
-const CLASSIFY_SYSTEM_PROMPT = `You are a classifier that decides which kind of generative AI a user's rough draft is meant for.
-Choose exactly one modality:
-- "video": the draft asks to create/generate a video, clip, animation, film, or cinematic footage (e.g. "make a video of...", "영상 생성", "동영상", "클립").
-- "image": the draft asks to create/generate an image, picture, illustration, photo, artwork, logo, or poster (e.g. "그림", "이미지", "일러스트", "사진", "포스터", "logo").
-- "music": the draft asks to create/generate music, a song, BGM, melody, beat, or audio track (e.g. "노래", "BGM", "작곡", "멜로디", "track", "beat").
-- "text": anything else — writing, explaining, summarizing, translating, coding, analysis, Q&A, etc. This is the default when intent is ambiguous.
+// 중립(전 차원 tier 3) baseline — 폴백/텍스트용.
+function neutralBaseline(modality: Modality): TierSet {
+  const tiers: TierSet = {};
+  for (const dim of MODALITY_DIMENSIONS[modality]) tiers[dim] = 3;
+  return tiers;
+}
+
+// DIMENSION_LABELS(영문)에서 baseline 판단용 tier 루브릭 텍스트를 생성한다.
+// 라벨을 단일 출처로 재사용해 루브릭과 스니펫 의미가 어긋나지 않게 한다.
+function buildBaselineRubric(): string {
+  const mediaModalities: Modality[] = ['image', 'video', 'music'];
+  return mediaModalities
+    .map((m) => {
+      const dimsLine = MODALITY_DIMENSIONS[m]
+        .map((dim) => {
+          const en = DIMENSION_LABELS[m][dim].en;
+          const ends = `1=${en[1]}, 3=neutral, 5=${en[5]}`;
+          return `${dim} (${ends})`;
+        })
+        .join('; ');
+      return `- ${m}: order [${MODALITY_DIMENSIONS[m].join(', ')}] → ${dimsLine}`;
+    })
+    .join('\n');
+}
+
+const CLASSIFY_SYSTEM_PROMPT = `You are a classifier that (1) decides which kind of generative AI a user's rough draft is meant for, and (2) estimates the baseline tiers the TASK typically calls for.
+
+# 1. Modality — choose exactly one
+- "video": create/generate a video, clip, animation, film, or cinematic footage (e.g. "make a video of...", "영상 생성", "동영상", "클립").
+- "image": create/generate an image, picture, illustration, photo, artwork, logo, or poster (e.g. "그림", "이미지", "일러스트", "사진", "포스터", "logo").
+- "music": create/generate music, a song, BGM, melody, beat, or audio track (e.g. "노래", "BGM", "작곡", "멜로디", "track", "beat").
+- "text": anything else — writing, explaining, summarizing, translating, coding, analysis, Q&A, etc. Default when ambiguous.
+
+# 2. Baseline tiers (1-5) — what the TASK conventionally demands, NOT personal taste
+Judge from the subject/genre what a typical good result would use. Tier 3 = neutral/balanced; only move off 3 when the task clearly leans. Output the 4 integers in this fixed per-modality order:
+${buildBaselineRubric()}
+For "text", always output [3,3,3,3] (baseline is unused for text).
+
+# Few-shot
+- "기업 로고 디자인" → image, baseline [2,1,2,2]  (clean, minimal, simple lighting, restrained color)
+- "사이버펑크 도시 야경 일러스트" → image, baseline [4,4,5,5]  (illustration, intricate, cinematic light, neon color)
+- "잔잔한 새벽 카페 브이로그" → video, baseline [2,1,1,2]  (subtle camera, long take, live-action, restrained mood)
+- "신나는 파티 EDM" → music, baseline [5,5,4,2]  (fast, high energy, rich, fairly standard genre)
+- "회의록 요약해줘" → text, baseline [3,3,3,3]
+
 Respond only via the structured schema.`;
 
-async function classifyModality(draft: string): Promise<Modality> {
+async function classifyDraft(draft: string): Promise<{ modality: Modality; baseline: TierSet }> {
   try {
     const result = await generateText({
       model: anthropic('claude-haiku-4-5'),
       output: Output.object({ schema: modalityClassificationSchema }),
       system: CLASSIFY_SYSTEM_PROMPT,
       prompt: draft,
-      temperature: 0, // 분류는 결정적이어야 하므로 온도 0
+      temperature: 0, // 분류·baseline 모두 결정적이어야 하므로 온도 0
     });
-    return result.output.modality as Modality;
+    const modality = result.output.modality as Modality;
+    const dims = MODALITY_DIMENSIONS[modality];
+    const arr = result.output.baseline ?? [];
+    const baseline: TierSet = {};
+    dims.forEach((dim, i) => {
+      const v = arr[i];
+      // 범위를 벗어나거나 누락된 값은 중립(3)으로 안전 처리.
+      baseline[dim] = typeof v === 'number' ? clampTier(v) : 3;
+    });
+    return { modality, baseline };
   } catch (error) {
     console.error('Modality classification failed, defaulting to text:', error);
-    return 'text';
+    return { modality: 'text', baseline: neutralBaseline('text') };
   }
 }
 
@@ -670,8 +736,8 @@ export const generatePromptCandidates = async (
   // 0~1. 모달리티 분류 + 유저 프로필/가중치 조회를 병렬 실행.
   //   DB 조회는 userId만 사용해 modality 분류와 의존성이 없으므로 동시에 돌린다
   //   (분류용 Haiku 호출 1회 왕복만큼 지연 단축).
-  const [modality, profileResult, prefsResult] = await Promise.all([
-    classifyModality(originalInput),
+  const [{ modality, baseline }, profileResult, prefsResult] = await Promise.all([
+    classifyDraft(originalInput),
     supabase
       .from('users')
       .select('job_role, primary_purpose')
@@ -683,13 +749,17 @@ export const generatePromptCandidates = async (
       .eq('user_id', userId),
   ]);
   const dims = MODALITY_DIMENSIONS[modality];
+  const isMedia = modality !== 'text';
 
   const job = profileResult.data?.job_role ?? context?.domain ?? '명시되지 않음';
   const purpose = profileResult.data?.primary_purpose ?? '명시되지 않음';
 
-  // user_preferences mapping — 현재 모달리티의 차원만, prefKey 규칙으로 매핑
+  // user_preferences mapping — 현재 모달리티의 차원만, prefKey 규칙으로 매핑.
+  //   · text:  weight_score = 절대 가중치(기본 1.0) → getTier()
+  //   · media: weight_score = baseline 대비 잔차(lean, 기본 0.0) → clampTier(baseline + lean)
   const prefs: Record<string, number> = {};
-  for (const dim of dims) prefs[dim] = 1.0;
+  const prefDefault = isMedia ? 0.0 : 1.0;
+  for (const dim of dims) prefs[dim] = prefDefault;
 
   if (prefsResult.data) {
     prefsResult.data.forEach((row) => {
@@ -701,9 +771,12 @@ export const generatePromptCandidates = async (
     });
   }
 
-  // 2. 가중치 → tier 변환 및 ±1 변형 설정
+  // 2. 가중치 → exact tier 변환 및 ±1 변형 설정
+  //   미디어는 "주제 baseline + 개인 lean"으로, 텍스트는 절대 가중치로 tier를 정한다.
   const exactTiers: TierSet = {};
-  for (const dim of dims) exactTiers[dim] = getTier(prefs[dim]);
+  for (const dim of dims) {
+    exactTiers[dim] = isMedia ? clampTier(baseline[dim] + prefs[dim]) : getTier(prefs[dim]);
+  }
   const variantATiers = generateRandomVariantTiers(dims, exactTiers);
   const variantBTiers = generateRandomVariantTiers(dims, exactTiers, variantATiers);
 
@@ -761,6 +834,8 @@ export const generatePromptCandidates = async (
           targetModality: modality,
           variant: slot.variant,
           appliedTiers: slot.tiers,
+          // 미디어만 baseline을 저장 — 피드백 잔차(lean) 학습의 기준점.
+          ...(isMedia ? { baselineTiers: baseline } : {}),
           tierDescription: buildTierDescription(modality, slot.tiers, lang),
         },
       };

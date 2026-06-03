@@ -27,6 +27,9 @@ export const promptCandidateSchema = z.object({
     tierDescription: z.string().optional(),
     // 모달리티별로 차원이 달라 가변 키를 허용 (예: text=tone/level/density/creativity, video=camera/pacing/...)
     appliedTiers: z.record(z.string(), z.number()).optional(),
+    // 미디어(image/video/music)에서 주제가 요구하는 기준 tier. 잔차(lean) 학습용으로
+    // prompt_logs.chosen_metadata에 함께 저장된다. 텍스트는 사용하지 않음.
+    baselineTiers: z.record(z.string(), z.number()).optional(),
   }),
 });
 
