@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { supabase } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n/useTranslation";
 import { useLanguageContext } from "@/lib/i18n/LanguageProvider";
 import {
@@ -51,6 +52,7 @@ export default function AnalyticsPage() {
   const lang = (language === "en" ? "en" : "ko") as "ko" | "en";
   const [weights, setWeights] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     async function fetchPreferences() {
@@ -58,6 +60,7 @@ export default function AnalyticsPage() {
         setIsLoading(false);
         return;
       }
+      setIsLoading(true);
       const { data, error } = await supabase
         .from("user_preferences")
         .select("category, weight_score")
@@ -73,7 +76,7 @@ export default function AnalyticsPage() {
       setIsLoading(false);
     }
     fetchPreferences();
-  }, [user]);
+  }, [user, pathname]);
 
   // 텍스트(절대 가중치): 미존재 시 1.0(중립). 0~2.0 → 0~100%
   const pct = (category: string) =>
